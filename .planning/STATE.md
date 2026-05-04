@@ -1,3 +1,17 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: Roadmap created, ready for plan generation
+last_updated: "2026-05-04T11:26:53.347Z"
+progress:
+  total_phases: 12
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
+---
+
 # State: Meridian Capital Partners (`MCP` / `ls_equity_fund`)
 
 **Last updated:** 2026-05-04 (initialization)
@@ -79,6 +93,7 @@ None.
 **Last session ended:** 2026-05-04 (roadmap initialization)
 **Next entry point:** `/gsd-plan-phase 0` to decompose Phase 0 (Foundation) into executable plans
 **Files of record:**
+
 - `.planning/PROJECT.md` — project context, core value, constraints, key decisions
 - `.planning/REQUIREMENTS.md` — 90 v1 requirements with phase traceability
 - `.planning/ROADMAP.md` — 11-phase v1 plan with success criteria
