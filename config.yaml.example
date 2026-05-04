@@ -11,6 +11,7 @@ data:
   lookback_years: 3
   benchmark: SPY
   cache_dir: cache
+  yfinance_max_workers: 8        # ThreadPoolExecutor concurrency for yfinance OHLCV fetch
 
 broker:
   paper_host: 127.0.0.1

@@ -16,6 +16,8 @@ from ls_equity_fund.data.providers import (
     OHLCVProvider,
     PolygonProvider,
     ShortInterestProvider,
+    YFinanceError,
+    YFinanceProvider,
 )
 
 __all__ = [
@@ -27,4 +29,6 @@ __all__ = [
     "OHLCVProvider",
     "PolygonProvider",
     "ShortInterestProvider",
+    "YFinanceError",
+    "YFinanceProvider",
 ]

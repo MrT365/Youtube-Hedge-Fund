@@ -20,6 +20,10 @@ from ls_equity_fund.data.providers.base import (
     ShortInterestProvider,
 )
 from ls_equity_fund.data.providers.polygon_provider import PolygonProvider
+from ls_equity_fund.data.providers.yfinance_provider import (
+    YFinanceError,
+    YFinanceProvider,
+)
 
 __all__ = [
     "EstimatesProvider",
@@ -29,4 +33,6 @@ __all__ = [
     "OHLCVProvider",
     "PolygonProvider",
     "ShortInterestProvider",
+    "YFinanceError",
+    "YFinanceProvider",
 ]

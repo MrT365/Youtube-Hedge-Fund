@@ -37,6 +37,7 @@ class DataConfig(BaseModel):
     lookback_years: int = Field(default=3, ge=1, le=20)
     benchmark: str = "SPY"
     cache_dir: str = "cache"
+    yfinance_max_workers: int = Field(default=8, ge=1, le=32)
 
 
 class BrokerConfig(BaseModel):
