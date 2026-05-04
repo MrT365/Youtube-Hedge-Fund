@@ -161,17 +161,121 @@ Deferred. Tracked but not in current roadmap.
 
 ## Traceability
 
-Empty initially — populated by the roadmapper.
+Populated by roadmap creation 2026-05-04. Every v1 REQ-ID maps to exactly one phase in `.planning/ROADMAP.md`.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (filled by roadmap) | | |
+| DATA-01 | Phase 1 | Pending |
+| DATA-02 | Phase 1 | Pending |
+| DATA-03 | Phase 1 | Pending |
+| DATA-04 | Phase 1 | Pending |
+| DATA-05 | Phase 1 | Pending |
+| DATA-06 | Phase 1 | Pending |
+| DATA-07 | Phase 1 | Pending |
+| DATA-08 | Phase 1 | Pending |
+| DATA-09 | Phase 1 | Pending |
+| DATA-10 | Phase 1 | Pending |
+| DATA-11 | Phase 1 | Pending |
+| DATA-12 | Phase 1 | Pending |
+| DATA-13 | Phase 1 | Pending |
+| DATA-14 | Phase 1 | Pending |
+| SCORE-01 | Phase 2 | Pending |
+| SCORE-02 | Phase 2 | Pending |
+| SCORE-03 | Phase 2 | Pending |
+| SCORE-04 | Phase 2 | Pending |
+| SCORE-05 | Phase 2 | Pending |
+| SCORE-06 | Phase 2 | Pending |
+| SCORE-07 | Phase 2 | Pending |
+| SCORE-08 | Phase 2 | Pending |
+| SCORE-09 | Phase 2 | Pending |
+| SCORE-10 | Phase 2 | Pending |
+| ANAL-01 | Phase 4 | Pending |
+| ANAL-02 | Phase 4 | Pending |
+| ANAL-03 | Phase 4 | Pending |
+| ANAL-04 | Phase 4 | Pending |
+| ANAL-05 | Phase 4 | Pending |
+| ANAL-06 | Phase 4 | Pending |
+| ANAL-07 | Phase 4 | Pending |
+| ANAL-08 | Phase 4 | Pending |
+| ANAL-09 | Phase 4 | Pending |
+| ANAL-10 | Phase 4 | Pending |
+| ANAL-11 | Phase 4 | Pending |
+| ANAL-12 | Phase 4 | Pending |
+| PORT-01 | Phase 5 | Pending |
+| PORT-02 | Phase 7 | Pending |
+| PORT-03 | Phase 7 | Pending |
+| PORT-04 | Phase 5 | Pending |
+| PORT-05 | Phase 5 | Pending |
+| PORT-06 | Phase 5 | Pending |
+| PORT-07 | Phase 5 | Pending |
+| PORT-08 | Phase 5 | Pending |
+| PORT-09 | Phase 5 | Pending |
+| PORT-10 | Phase 5 | Pending |
+| RISK-01 | Phase 6 | Pending |
+| RISK-02 | Phase 6 | Pending |
+| RISK-03 | Phase 6 | Pending |
+| RISK-04 | Phase 6 | Pending |
+| RISK-05 | Phase 6 | Pending |
+| RISK-06 | Phase 6 | Pending |
+| RISK-07 | Phase 6 | Pending |
+| EXEC-01 | Phase 8 | Pending |
+| EXEC-02 | Phase 8 | Pending |
+| EXEC-03 | Phase 8 | Pending |
+| EXEC-04 | Phase 8 | Pending |
+| EXEC-05 | Phase 8 | Pending |
+| EXEC-06 | Phase 8 | Pending |
+| EXEC-07 | Phase 8 | Pending |
+| EXEC-08 | Phase 8 | Pending |
+| EXEC-09 | Phase 8 | Pending |
+| REPORT-01 | Phase 9 | Pending |
+| REPORT-02 | Phase 9 | Pending |
+| REPORT-03 | Phase 9 | Pending |
+| REPORT-04 | Phase 9 | Pending |
+| REPORT-05 | Phase 9 | Pending |
+| REPORT-06 | Phase 9 | Pending |
+| REPORT-07 | Phase 9 | Pending |
+| REPORT-08 | Phase 9 | Pending |
+| DASH-01 | Phase 3 | Pending |
+| DASH-02 | Phase 3 | Pending |
+| DASH-03 | Phase 3 | Pending |
+| DASH-04 | Phase 3 | Pending |
+| DASH-05 | Phase 10 | Pending |
+| DASH-06 | Phase 10 | Pending |
+| DASH-07 | Phase 10 | Pending |
+| DASH-08 | Phase 10 | Pending |
+| DASH-09 | Phase 10 | Pending |
+| INFRA-01 | Phase 0 | Pending |
+| INFRA-02 | Phase 0 | Pending |
+| INFRA-03 | Phase 0 | Pending |
+| INFRA-04 | Phase 10 | Pending |
+| INFRA-05 | Phase 10 | Pending |
+| INFRA-06 | Phase 0 | Pending |
+| INFRA-07 | Phase 0 | Pending |
+| INFRA-08 | Phase 0 | Pending |
+| AUDIT-01 | Phase 6 | Pending |
+| AUDIT-02 | Phase 0 | Pending |
+| AUDIT-03 | Phase 10 | Pending |
 
 **Coverage:**
-- v1 requirements: ~73 total (precise count after roadmapper completes traceability)
-- Mapped to phases: TBD
-- Unmapped: TBD
+- v1 requirements: 90 total
+- Mapped to phases: 90 (100%)
+- Unmapped: 0
+
+**Phase requirement counts:**
+- Phase 0 (Foundation): 7 — INFRA-01, INFRA-02, INFRA-03, INFRA-06, INFRA-07, INFRA-08, AUDIT-02
+- Phase 1 (Data Infrastructure): 14 — DATA-01 through DATA-14
+- Phase 2 (Scoring Engine): 10 — SCORE-01 through SCORE-10
+- Phase 3 (Reporting + Dashboard Skeleton): 4 — DASH-01, DASH-02, DASH-03, DASH-04
+- Phase 4 (Claude AI Analysis): 12 — ANAL-01 through ANAL-12
+- Phase 5 (Portfolio — Conviction-tilt): 8 — PORT-01, PORT-04, PORT-05, PORT-06, PORT-07, PORT-08, PORT-09, PORT-10
+- Phase 6 (Risk Management): 8 — RISK-01 through RISK-07, AUDIT-01
+- Phase 7 (Portfolio — MVO swap-in): 2 — PORT-02, PORT-03
+- Phase 8 (IBKR Execution — Paper): 9 — EXEC-01 through EXEC-09
+- Phase 9 (Reporting — Full): 8 — REPORT-01 through REPORT-08
+- Phase 10 (Dashboard Polish + JARVIS + launchd + Promotion): 8 — DASH-05, DASH-06, DASH-07, DASH-08, DASH-09, INFRA-04, INFRA-05, AUDIT-03
+
+Total: 7+14+10+4+12+8+8+2+9+8+8 = **90** ✓
 
 ---
 *Requirements defined: 2026-05-04*
-*Last updated: 2026-05-04 after initial definition*
+*Last updated: 2026-05-04 — traceability populated by roadmap creation*
