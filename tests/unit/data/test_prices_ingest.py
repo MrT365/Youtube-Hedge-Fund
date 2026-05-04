@@ -39,9 +39,18 @@ def setup_db(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def config(setup_db: Path):
-    """Load test config and point cache_dir at tmp_path."""
-    config_obj, _ = load_config(yaml_path=str(REPO_ROOT / "config.yaml.example"))
+def config(setup_db: Path, fresh_env_path: Path):
+    """Load test config and point cache_dir at tmp_path.
+
+    ``fresh_env_path`` (from tests/conftest.py) supplies the dummy
+    ANTHROPIC_API_KEY / SEC_USER_AGENT that ``Secrets`` requires; we don't
+    consume the secrets here, but ``load_config`` instantiates ``Secrets``
+    eagerly.
+    """
+    config_obj, _ = load_config(
+        yaml_path=str(REPO_ROOT / "config.yaml.example"),
+        env_path=fresh_env_path,
+    )
     config_obj.data.cache_dir = str(setup_db.parent)
     config_obj.data.lookback_years = 1
     return config_obj
