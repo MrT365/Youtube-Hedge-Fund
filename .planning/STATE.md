@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
+status: ready_to_plan
 last_updated: "2026-05-04T11:59:12.752Z"
 progress:
   total_phases: 12
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 7
   completed_plans: 0
-  percent: 0
+  percent: 8
 ---
 
 # State: Meridian Capital Partners (`MCP` / `ls_equity_fund`)
@@ -27,12 +27,12 @@ progress:
 
 ## Current Position
 
-Phase: 0 (foundation) — EXECUTING
-Plan: 1 of 7
+Phase: 1
+Plan: Not started
 
 - **Active Phase:** 0 — Foundation
 - **Active Plan:** None (plans not yet generated; awaiting `/gsd-plan-phase 0`)
-- **Status:** Executing Phase 0
+- **Status:** Ready to plan
 - **Progress:** Phase 0 of 11 (0% complete)
 
 ```

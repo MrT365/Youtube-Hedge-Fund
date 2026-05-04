@@ -174,7 +174,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. Foundation | 7/7 | Complete   | 2026-05-04 |
+| 0. Foundation | 7/7 | Complete    | 2026-05-04 |
 | 1. Data Infrastructure (L1) | 0/? | Not started | - |
 | 2. Scoring Engine (L2) | 0/? | Not started | - |
 | 3. Reporting + Dashboard Skeleton | 0/? | Not started | - |

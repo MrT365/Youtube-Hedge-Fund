@@ -110,19 +110,19 @@
 
 ### INFRA (Cross-Cutting Infrastructure)
 
-- [ ] **INFRA-01**: All parameters live in `config.yaml`; secrets in `.env` (gitignored); pydantic-settings validates load and surfaces errors at startup
-- [ ] **INFRA-02**: Local SQLite database under `cache/` in WAL mode; one writer (CLI), many readers (dashboard); single migration story (Alembic with `batch_alter_table` for SQLite ALTER limits)
-- [ ] **INFRA-03**: Project layout under `src/ls_equity_fund/{data,factors,analysis,portfolio,risk,execution,reporting,dashboard,cli}/` with three swap-in seams: `MarketDataProvider`, `Optimizer`, `Broker` — each abstract base + concrete sibling + config selector
+- [x] **INFRA-01**: All parameters live in `config.yaml`; secrets in `.env` (gitignored); pydantic-settings validates load and surfaces errors at startup
+- [x] **INFRA-02**: Local SQLite database under `cache/` in WAL mode; one writer (CLI), many readers (dashboard); single migration story (Alembic with `batch_alter_table` for SQLite ALTER limits)
+- [x] **INFRA-03**: Project layout under `src/ls_equity_fund/{data,factors,analysis,portfolio,risk,execution,reporting,dashboard,cli}/` with three swap-in seams: `MarketDataProvider`, `Optimizer`, `Broker` — each abstract base + concrete sibling + config selector
 - [ ] **INFRA-04**: macOS launchd plist at `~/Library/LaunchAgents/com.user.hedgefund.daily.plist`; weekdays 17:15 local; `WakeSystem=true` so the job runs after sleep; runs `run_scoring.py --no-filings --no-13f`; target ~10 min
 - [ ] **INFRA-05**: Daily run records a `runs` row (start_ts, end_ts, status, error) and writes a heartbeat file so the dashboard can surface silent-failure
-- [ ] **INFRA-06**: `.gitignore` covers `.env`, `cache/`, `output/`; `.planning/` stays tracked
-- [ ] **INFRA-07**: Python 3.11+ via `uv`; `pyproject.toml` + `uv.lock`; pin `pandas>=2.2,<3.0` and `numpy>=2.0,<2.5` to dodge pandas 3.0 breakage; pin `ib_async==2.1.x`, `edgartools==5.30.x`, Anthropic SDK ≥ 0.97
-- [ ] **INFRA-08**: Two CLI entrypoints per layer plus a `daily-refresh` meta-command; shared flags (`--dry-run`, `--whatif`, `--no-filings`, `--no-13f`, `--ticker`, `--sector`, `--optimize-method`)
+- [x] **INFRA-06**: `.gitignore` covers `.env`, `cache/`, `output/`; `.planning/` stays tracked
+- [x] **INFRA-07**: Python 3.11+ via `uv`; `pyproject.toml` + `uv.lock`; pin `pandas>=2.2,<3.0` and `numpy>=2.0,<2.5` to dodge pandas 3.0 breakage; pin `ib_async==2.1.x`, `edgartools==5.30.x`, Anthropic SDK ≥ 0.97
+- [x] **INFRA-08**: Two CLI entrypoints per layer plus a `daily-refresh` meta-command; shared flags (`--dry-run`, `--whatif`, `--no-filings`, `--no-13f`, `--ticker`, `--sector`, `--optimize-method`)
 
 ### AUDIT (Cross-Cutting Discipline)
 
 - [ ] **AUDIT-01**: Every order, veto rejection, circuit-breaker firing, and optimizer fallback persists with timestamp, reason, and snapshot context to immutable audit tables
-- [ ] **AUDIT-02**: Logging via structlog; API keys redacted from log output; `.env` secrets never written to logs or commits
+- [x] **AUDIT-02**: Logging via structlog; API keys redacted from log output; `.env` secrets never written to logs or commits
 - [ ] **AUDIT-03**: Paper→live promotion ceremony documented in `PROMOTION.md` with named numeric criteria (e.g., ≥ N weeks paper, max DD < X%, slippage within Y bps of model, factor IC stable, audit log clean) — gated by code (`MERIDIAN_LIVE_OK=1` env-var) AND by the operator signing a checked-criteria record *(gap G4 from research)*
 
 ## v2 Requirements
@@ -244,16 +244,16 @@ Populated by roadmap creation 2026-05-04. Every v1 REQ-ID maps to exactly one ph
 | DASH-07 | Phase 10 | Pending |
 | DASH-08 | Phase 10 | Pending |
 | DASH-09 | Phase 10 | Pending |
-| INFRA-01 | Phase 0 | Pending |
-| INFRA-02 | Phase 0 | Pending |
-| INFRA-03 | Phase 0 | Pending |
+| INFRA-01 | Phase 0 | Complete |
+| INFRA-02 | Phase 0 | Complete |
+| INFRA-03 | Phase 0 | Complete |
 | INFRA-04 | Phase 10 | Pending |
 | INFRA-05 | Phase 10 | Pending |
-| INFRA-06 | Phase 0 | Pending |
-| INFRA-07 | Phase 0 | Pending |
-| INFRA-08 | Phase 0 | Pending |
+| INFRA-06 | Phase 0 | Complete |
+| INFRA-07 | Phase 0 | Complete |
+| INFRA-08 | Phase 0 | Complete |
 | AUDIT-01 | Phase 6 | Pending |
-| AUDIT-02 | Phase 0 | Pending |
+| AUDIT-02 | Phase 0 | Complete |
 | AUDIT-03 | Phase 10 | Pending |
 
 **Coverage:**
