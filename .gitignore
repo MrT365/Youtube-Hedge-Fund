@@ -1,0 +1,58 @@
+# Secrets (never commit)
+.env
+.env.*
+!.env.example
+
+# Per-machine config (operator copies from config.yaml.example)
+config.yaml
+
+# Local data + logs (per PROJECT.md: no telemetry, all data local)
+cache/
+output/
+logs/
+
+# SQLite databases (defense-in-depth on top of cache/ rule)
+*.sqlite
+*.sqlite-*
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+.eggs/
+build/
+dist/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+
+# IDEs / editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Streamlit
+.streamlit/secrets.toml
+
+# uv
+# (uv.lock IS committed; .venv is not)
