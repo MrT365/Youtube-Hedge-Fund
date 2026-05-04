@@ -36,8 +36,8 @@
   2. Operator can run a CLI smoke command that loads `config.yaml` (validated by pydantic-settings), opens the SQLite DB in WAL mode at the configured path, runs `alembic upgrade head` to apply the initial migration, and exits 0.
   3. Operator can import each of the three abstract base classes (`MarketDataProvider`, `Optimizer`, `Broker`) and instantiate the in-memory `PaperBroker` against the deterministic-fill contract — verifying the swap-in seams work before any concrete provider exists.
   4. `.gitignore` correctly excludes `.env`, `cache/`, and `output/` while keeping `.planning/` tracked; structlog emits JSON with API keys redacted from log output on a sample event.
-**Plans:** 7 plans
-  - [ ] 00-01-PLAN.md — Project tooling (pyproject.toml, uv.lock, .gitignore, .env.example, config.yaml.example) [INFRA-06, INFRA-07]
+**Plans:** 1/7 plans executed
+  - [x] 00-01-PLAN.md — Project tooling (pyproject.toml, uv.lock, .gitignore, .env.example, config.yaml.example) [INFRA-06, INFRA-07]
   - [ ] 00-02-PLAN.md — Composed pydantic-settings Config + isolated Secrets [INFRA-01]
   - [ ] 00-03-PLAN.md — SQLite WAL gateway + Alembic migrations + initial runs/heartbeat tables [INFRA-02]
   - [ ] 00-04-PLAN.md — structlog dual-sink + API-key redaction + run_id contextvars [AUDIT-02]
@@ -174,7 +174,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. Foundation | 0/? | Not started | - |
+| 0. Foundation | 1/7 | In Progress|  |
 | 1. Data Infrastructure (L1) | 0/? | Not started | - |
 | 2. Scoring Engine (L2) | 0/? | Not started | - |
 | 3. Reporting + Dashboard Skeleton | 0/? | Not started | - |
