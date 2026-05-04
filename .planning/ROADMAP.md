@@ -13,7 +13,7 @@
 
 ## Phases
 
-- [ ] **Phase 0: Foundation** — Repo scaffolding, config schema, SQLite migrations, three seam interfaces, PaperBroker stub, CLI skeleton, structlog audit setup
+- [x] **Phase 0: Foundation** — Repo scaffolding, config schema, SQLite migrations, three seam interfaces, PaperBroker stub, CLI skeleton, structlog audit setup (completed 2026-05-04)
 - [ ] **Phase 1: Data Infrastructure (L1)** — Universe (3 modes) + PIT table, benchmarks, daily prices, fundamentals + 24 ratios, EDGAR (10-K/Q/8-K/Form 4 P/S/A/M/F), 13F, short interest, analyst estimates, earnings + FOMC calendars
 - [ ] **Phase 2: Scoring Engine (L2)** — 8 factors × 27 sub-factors, GICS sector-percentile rank, P/S-only insider filter, factor_scores persistence
 - [ ] **Phase 3: Reporting + Dashboard Skeleton** — Streamlit at `localhost:8502`, Pages I + II reading L1+L2 only; ranked candidates visible daily before the rest of the stack lands
@@ -36,14 +36,14 @@
   2. Operator can run a CLI smoke command that loads `config.yaml` (validated by pydantic-settings), opens the SQLite DB in WAL mode at the configured path, runs `alembic upgrade head` to apply the initial migration, and exits 0.
   3. Operator can import each of the three abstract base classes (`MarketDataProvider`, `Optimizer`, `Broker`) and instantiate the in-memory `PaperBroker` against the deterministic-fill contract — verifying the swap-in seams work before any concrete provider exists.
   4. `.gitignore` correctly excludes `.env`, `cache/`, and `output/` while keeping `.planning/` tracked; structlog emits JSON with API keys redacted from log output on a sample event.
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans complete
   - [x] 00-01-PLAN.md — Project tooling (pyproject.toml, uv.lock, .gitignore, .env.example, config.yaml.example) [INFRA-06, INFRA-07]
   - [x] 00-02-PLAN.md — Composed pydantic-settings Config + isolated Secrets [INFRA-01]
   - [x] 00-03-PLAN.md — SQLite WAL gateway + Alembic migrations + initial runs/heartbeat tables [INFRA-02]
   - [x] 00-04-PLAN.md — structlog dual-sink + API-key redaction + run_id contextvars [AUDIT-02]
   - [x] 00-05-PLAN.md — Package layout + 3 seam ABCs (MarketDataProvider/Optimizer/Broker) + PaperBroker [INFRA-03]
   - [x] 00-06-PLAN.md — Typer CLI: meridian doctor working + 7 stub subcommands accepting global flags [INFRA-08]
-  - [ ] 00-07-PLAN.md — Phase 0 verification harness (all 4 SCs as automated tests)
+  - [x] 00-07-PLAN.md — Phase 0 verification harness (all 4 SCs as automated tests)
 **UI hint**: no
 
 ### Phase 1: Data Infrastructure (L1)
@@ -174,7 +174,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. Foundation | 6/7 | In Progress|  |
+| 0. Foundation | 7/7 | Complete   | 2026-05-04 |
 | 1. Data Infrastructure (L1) | 0/? | Not started | - |
 | 2. Scoring Engine (L2) | 0/? | Not started | - |
 | 3. Reporting + Dashboard Skeleton | 0/? | Not started | - |
