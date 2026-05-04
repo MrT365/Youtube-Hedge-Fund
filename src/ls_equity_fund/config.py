@@ -29,6 +29,22 @@ from pydantic_settings import (
 # ---------- Sub-configs (composed under Config) ----------
 
 
+class LiquidUSConfig(BaseModel):
+    """liquid_us universe-mode thresholds (DATA-01).
+
+    Defaults chosen for institutional-quality liquid US equities:
+    - exchanges: NYSE + NASDAQ only (excludes OTC/PINK/AMEX micro-caps)
+    - min_price: $5 (avoids penny stocks where 5% impact = noise)
+    - min_avg_dollar_volume_20d: $10M (ensures position sizes don't move the market)
+    - min_market_cap: $500M (filters out names with sparse fundamentals coverage)
+    """
+
+    exchanges: list[str] = Field(default_factory=lambda: ["NYSE", "NASDAQ"])
+    min_price: float = Field(default=5.0, gt=0)
+    min_avg_dollar_volume_20d: float = Field(default=10_000_000.0, gt=0)
+    min_market_cap: float = Field(default=500_000_000.0, gt=0)
+
+
 class DataConfig(BaseModel):
     """Market-data layer config (DataConfig)."""
 
@@ -37,6 +53,36 @@ class DataConfig(BaseModel):
     lookback_years: int = Field(default=3, ge=1, le=20)
     benchmark: str = "SPY"
     cache_dir: str = "cache"
+    liquid_us: LiquidUSConfig = Field(default_factory=LiquidUSConfig)
+    scanner_seed_tickers: list[str] = Field(
+        # 50-ticker seed list = 10 GICS sectors x 5 mega-caps. Plan-prose-math
+        # said "11 sectors x 5" = 55, conflicting with the firm "50-ticker"
+        # constraint and the acceptance check (`len == 50`); resolved by
+        # dropping XLRE (Real Estate, ~3% S&P weight, lowest liquidity among
+        # the eleven sector ETFs). [Rule 1 deviation in 01-02 SUMMARY.md]
+        default_factory=lambda: [
+            # XLK (Information Technology)
+            "AAPL", "MSFT", "NVDA", "AVGO", "ORCL",
+            # XLF (Financials)
+            "JPM", "BAC", "WFC", "GS", "MS",
+            # XLV (Health Care)
+            "UNH", "JNJ", "LLY", "ABBV", "PFE",
+            # XLE (Energy)
+            "XOM", "CVX", "COP", "EOG", "SLB",
+            # XLI (Industrials)
+            "GE", "HON", "CAT", "RTX", "UPS",
+            # XLC (Communication Services)
+            "META", "GOOGL", "DIS", "CMCSA", "NFLX",
+            # XLY (Consumer Discretionary)
+            "AMZN", "TSLA", "HD", "MCD", "NKE",
+            # XLP (Consumer Staples)
+            "PG", "KO", "PEP", "COST", "WMT",
+            # XLB (Materials)
+            "LIN", "SHW", "APD", "ECL", "FCX",
+            # XLU (Utilities)
+            "NEE", "DUK", "SO", "AEP", "D",
+        ]
+    )
 
 
 class BrokerConfig(BaseModel):
@@ -257,6 +303,7 @@ __all__ = [
     "BrokerConfig",
     "Config",
     "DataConfig",
+    "LiquidUSConfig",
     "LoggingConfig",
     "PortfolioConfig",
     "RiskConfig",
