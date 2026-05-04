@@ -85,7 +85,7 @@ def doctor(
         config, _secrets = load_config(yaml_path=config_path, env_path=env_path)
     except typer.Exit:
         raise
-    except Exception as e:  # noqa: BLE001 — surface any validation/parse error to operator
+    except Exception as e:   # surface any error to operator
         typer.secho(
             f"ERROR: failed to load config: {e}",
             fg=typer.colors.RED,
@@ -131,7 +131,7 @@ def doctor(
     alembic_cfg.set_main_option("sqlalchemy.url", f"sqlite:///{db_path}")
     try:
         alembic_command.upgrade(alembic_cfg, "head")
-    except Exception as e:  # noqa: BLE001 — surface any migration error
+    except Exception as e:   # surface any migration error
         log.error("migration_failed", error=str(e))
         typer.secho(
             f"ERROR: alembic upgrade head failed: {e}",

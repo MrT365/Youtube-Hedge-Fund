@@ -62,8 +62,15 @@ def _resolve_db_url() -> str:
 
 
 # Resolve once and inject into the alembic config so both offline + online modes see it.
-_db_url = _resolve_db_url()
-config.set_main_option("sqlalchemy.url", _db_url)
+# IMPORTANT: only override sqlalchemy.url if the caller hasn't already set one. Tests pass
+# their own tmp-path URL via `cfg.set_main_option("sqlalchemy.url", ...)` before running
+# alembic.command.upgrade(); blindly calling `_resolve_db_url()` would clobber it and
+# silently run the migration against the production cache DB instead of the tmp DB.
+_caller_set_url = config.get_main_option("sqlalchemy.url")
+_STUB_URLS = {"", "sqlite:///cache/ls_equity_fund.db", "sqlite:///./cache/ls_equity_fund.db"}
+if not _caller_set_url or _caller_set_url in _STUB_URLS:
+    _db_url = _resolve_db_url()
+    config.set_main_option("sqlalchemy.url", _db_url)
 
 # We do NOT use SQLAlchemy MetaData / autogenerate (per D-01).
 # All migrations are hand-written raw SQL via op.execute().
