@@ -294,8 +294,14 @@ def test_sc2_doctor_creates_db_in_wal_mode(doctor_workspace: Path) -> None:
 
 
 def test_sc2_doctor_runs_alembic_upgrade_to_head(doctor_workspace: Path) -> None:
-    """SC2: post-doctor, ``runs`` + ``heartbeat`` + ``alembic_version`` exist
-    and ``alembic_version`` is at revision ``0001`` (initial migration)."""
+    """SC2: post-doctor, the Phase 0 baseline tables exist and ``alembic_version``
+    holds the current head.
+
+    The literal head revision advances as later phases ship their own migrations
+    (Phase 1 ships 0002, Phase 2 will ship 0003, ...). The SC2 contract is
+    "alembic upgrade head succeeds and the Phase 0 baseline survives" — not
+    that head is permanently pinned at 0001.
+    """
     from ls_equity_fund.cli.app import app
 
     result = runner.invoke(app, ["doctor"])
@@ -318,7 +324,12 @@ def test_sc2_doctor_runs_alembic_upgrade_to_head(doctor_workspace: Path) -> None
         f"missing post-migration tables; got {sorted(tables)}"
     )
     assert len(versions) == 1, f"alembic_version row count={len(versions)}, expected 1"
-    assert versions[0][0] == "0001", f"alembic head={versions[0][0]!r}, expected '0001'"
+    # Head must be a 4-digit revision id and >= 0001 (post-Phase-0).
+    head = versions[0][0]
+    assert isinstance(head, str) and head.isdigit() and len(head) == 4, (
+        f"alembic head={head!r}, expected a 4-digit revision string"
+    )
+    assert head >= "0001", f"alembic head={head!r}, expected >= '0001'"
 
 
 def test_sc2_doctor_writes_doctor_passed_log_line(doctor_workspace: Path) -> None:

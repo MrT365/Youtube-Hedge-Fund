@@ -158,24 +158,51 @@ def test_heartbeat_singleton_row(tmp_path: Path) -> None:
 
 
 def test_upgrade_idempotent(tmp_path: Path) -> None:
-    """Test 4: re-running upgrade head is idempotent."""
+    """Test 4: re-running upgrade head is idempotent.
+
+    Note: this test is Phase 0 baseline; later phases land their own migrations
+    on top of 0001 and add tables of their own (Phase 1: 0002 adds 13 data
+    tables). The idempotency contract is "second upgrade does not change the
+    Phase 0 surface" — Phase 0 tables remain present, alembic_version stays
+    single-row, heartbeat singleton is preserved.
+    """
     db_path = tmp_path / "test.db"
     cfg = _make_alembic_config(db_path)
 
     command.upgrade(cfg, "head")
+    # Capture table set after first upgrade so we can assert idempotency
+    # (post-second-upgrade table set must be identical, not just a superset).
+    conn = get_connection(db_path)
+    try:
+        tables_after_first = {
+            row[0]
+            for row in conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+            )
+        }
+    finally:
+        conn.close()
+
     # Second run must not error and must not change schema.
     command.upgrade(cfg, "head")
 
     conn = get_connection(db_path)
     try:
-        # Schema unchanged — runs + heartbeat + alembic_version still the only tables.
         tables = {
             row[0]
             for row in conn.execute(
                 "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
             )
         }
-        assert tables == {"runs", "heartbeat", "alembic_version"}
+        # Idempotency: second upgrade leaves the same table set.
+        assert tables == tables_after_first, (
+            f"second upgrade changed schema: before={sorted(tables_after_first)} "
+            f"after={sorted(tables)}"
+        )
+        # Phase 0 baseline still present (independent of later phases' additions).
+        assert {"runs", "heartbeat", "alembic_version"} <= tables, (
+            f"Phase 0 baseline tables missing after upgrade head: got {sorted(tables)}"
+        )
 
         # alembic_version row count is exactly 1 (current head).
         version_count = conn.execute("SELECT COUNT(*) FROM alembic_version").fetchone()[0]
