@@ -5,6 +5,7 @@ decision in 00-CONTEXT.md (D-16 .. D-20).
 """
 from __future__ import annotations
 
+import contextlib
 import datetime as dt
 import logging
 import uuid
@@ -26,7 +27,7 @@ from ls_equity_fund.logging import (
 
 
 def _today_utc() -> str:
-    return dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
+    return dt.datetime.now(dt.UTC).strftime("%Y-%m-%d")
 
 
 def _flush_root_handlers() -> None:
@@ -44,19 +45,15 @@ def reset_logging(monkeypatch: pytest.MonkeyPatch):
     # Remove and close any handlers from prior tests so file locks release
     # cleanly under tmp_path teardown.
     for h in list(root.handlers):
-        try:
+        with contextlib.suppress(Exception):
             h.close()
-        except Exception:
-            pass
         root.removeHandler(h)
     clear_run_id()
     yield
     # Teardown: same dance.
     for h in list(root.handlers):
-        try:
+        with contextlib.suppress(Exception):
             h.close()
-        except Exception:
-            pass
         root.removeHandler(h)
     clear_run_id()
     # Reset structlog to defaults so other test files aren't affected.
@@ -281,11 +278,14 @@ def test_renderer_selection_when_non_tty(
     ]
     assert stream_handlers, "no stderr StreamHandler attached"
     formatter = stream_handlers[0].formatter
-    # ProcessorFormatter exposes the renderer via .processor.
-    proc = getattr(formatter, "processor", None)
-    assert proc is not None
-    assert isinstance(proc, structlog.processors.JSONRenderer), (
-        f"Expected JSONRenderer when isatty=False, got {type(proc).__name__}"
+    # ProcessorFormatter stores the chain in .processors — the renderer is the
+    # final element in the tuple. (structlog>=22 API)
+    procs = getattr(formatter, "processors", None) or (
+        getattr(formatter, "processor", None),
+    )
+    renderer = procs[-1]
+    assert isinstance(renderer, structlog.processors.JSONRenderer), (
+        f"Expected JSONRenderer when isatty=False, got {type(renderer).__name__}"
     )
 
 
@@ -306,10 +306,12 @@ def test_renderer_selection_when_tty(
     ]
     assert stream_handlers, "no stderr StreamHandler attached"
     formatter = stream_handlers[0].formatter
-    proc = getattr(formatter, "processor", None)
-    assert proc is not None
-    assert isinstance(proc, structlog.dev.ConsoleRenderer), (
-        f"Expected ConsoleRenderer when isatty=True, got {type(proc).__name__}"
+    procs = getattr(formatter, "processors", None) or (
+        getattr(formatter, "processor", None),
+    )
+    renderer = procs[-1]
+    assert isinstance(renderer, structlog.dev.ConsoleRenderer), (
+        f"Expected ConsoleRenderer when isatty=True, got {type(renderer).__name__}"
     )
 
 
