@@ -36,7 +36,14 @@
   2. Operator can run a CLI smoke command that loads `config.yaml` (validated by pydantic-settings), opens the SQLite DB in WAL mode at the configured path, runs `alembic upgrade head` to apply the initial migration, and exits 0.
   3. Operator can import each of the three abstract base classes (`MarketDataProvider`, `Optimizer`, `Broker`) and instantiate the in-memory `PaperBroker` against the deterministic-fill contract — verifying the swap-in seams work before any concrete provider exists.
   4. `.gitignore` correctly excludes `.env`, `cache/`, and `output/` while keeping `.planning/` tracked; structlog emits JSON with API keys redacted from log output on a sample event.
-**Plans**: TBD
+**Plans:** 7 plans
+  - [ ] 00-01-PLAN.md — Project tooling (pyproject.toml, uv.lock, .gitignore, .env.example, config.yaml.example) [INFRA-06, INFRA-07]
+  - [ ] 00-02-PLAN.md — Composed pydantic-settings Config + isolated Secrets [INFRA-01]
+  - [ ] 00-03-PLAN.md — SQLite WAL gateway + Alembic migrations + initial runs/heartbeat tables [INFRA-02]
+  - [ ] 00-04-PLAN.md — structlog dual-sink + API-key redaction + run_id contextvars [AUDIT-02]
+  - [ ] 00-05-PLAN.md — Package layout + 3 seam ABCs (MarketDataProvider/Optimizer/Broker) + PaperBroker [INFRA-03]
+  - [ ] 00-06-PLAN.md — Typer CLI: meridian doctor working + 7 stub subcommands accepting global flags [INFRA-08]
+  - [ ] 00-07-PLAN.md — Phase 0 verification harness (all 4 SCs as automated tests)
 **UI hint**: no
 
 ### Phase 1: Data Infrastructure (L1)
