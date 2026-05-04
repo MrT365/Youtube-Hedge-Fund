@@ -97,11 +97,14 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        # Apply project PRAGMAs to the migration connection too (best-effort —
-        # journal_mode is a per-database property, foreign_keys is per-connection).
-        connection.exec_driver_sql("PRAGMA journal_mode=WAL")
-        connection.exec_driver_sql("PRAGMA foreign_keys=ON")
-
+        # NOTE: We deliberately do NOT issue `PRAGMA journal_mode=WAL` here.
+        # journal_mode is a per-database persistent property and is set on every
+        # runtime connection by ls_equity_fund.db.get_connection. Issuing it here
+        # via SQLAlchemy promotes Alembic into "non-transactional DDL" mode and
+        # silently drops INSERT statements emitted by op.execute (verified by
+        # tests/unit/test_migrations.py::test_heartbeat_singleton_row).
+        # foreign_keys is per-connection and only needed when the migration body
+        # depends on FK enforcement; the Phase 0 migration does not.
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
