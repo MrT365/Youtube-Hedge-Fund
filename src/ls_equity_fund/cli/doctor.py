@@ -140,6 +140,34 @@ def doctor(
         )
         raise typer.Exit(code=6) from e
 
+    # NOTE: alembic's env.py calls ``logging.config.fileConfig(alembic.ini)``
+    # which (per stdlib default) sets ``disable_existing_loggers=True``. That
+    # flag (a) wipes the stdlib root handlers we attached in Step 4, (b) lowers
+    # root to WARNING (per alembic.ini's ``[logger_root]`` section), AND
+    # (c) sets ``disabled=True`` on every previously-named logger including
+    # ``"doctor"``. Without restoring our pipeline, post-alembic events
+    # (notably ``doctor_passed``) silently drop. Recovery sequence:
+    #   1. Re-enable every disabled named logger (fileConfig set them all dead).
+    #   2. Reset structlog's logger cache (cache_logger_on_first_use=True caches
+    #      bound loggers and survives a configure_logging re-run otherwise).
+    #   3. Clear the configure_logging idempotency guard so it re-attaches
+    #      handlers and resets the root level to ``config.logging.level``.
+    #   4. Re-bind run_id and re-fetch the doctor logger so the cached chain
+    #      points at the live handler set.
+    import logging as _stdlib_logging
+
+    import ls_equity_fund.logging as _log_mod
+
+    for _existing in _stdlib_logging.Logger.manager.loggerDict.values():
+        if isinstance(_existing, _stdlib_logging.Logger):
+            _existing.disabled = False
+
+    structlog.reset_defaults()
+    _log_mod._CONFIGURED = False
+    configure_logging(config.logging)
+    bind_run_id(run_id)
+    log = structlog.get_logger("doctor")
+
     # --- Step 8: verify required tables exist post-migration ---
     conn = get_connection(db_path)
     try:
