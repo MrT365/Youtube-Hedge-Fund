@@ -6,5 +6,6 @@ Phase 0 ships:
   - PaperBroker concrete (execution/paper_broker.py) - deterministic-fill contract
 """
 from ls_equity_fund.execution.base import Broker
+from ls_equity_fund.execution.paper_broker import PaperBroker
 
-__all__ = ["Broker"]
+__all__ = ["Broker", "PaperBroker"]
