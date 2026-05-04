@@ -1,4 +1,5 @@
 """Tests for PaperBroker - deterministic-fill contract (D-06, D-07, D-08, D-10)."""
+
 from __future__ import annotations
 
 import pytest

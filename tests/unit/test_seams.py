@@ -1,4 +1,5 @@
 """Tests for the three swap-in seam ABCs and the package skeleton."""
+
 from __future__ import annotations
 
 import importlib

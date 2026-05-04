@@ -3,6 +3,7 @@
 Phase 0 declares the abstract surface. Phase 5 ships ConvictionTiltOptimizer.
 Phase 7 ships MVOOptimizer (SLSQP) - both behind the same Optimizer interface.
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

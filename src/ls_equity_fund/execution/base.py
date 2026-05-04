@@ -9,6 +9,7 @@ is_paper (D-10): non-negotiable. Phase 8's MERIDIAN_LIVE_OK gate keys off it -
 a non-paper Broker must refuse to instantiate without the env var AND the
 AUDIT-03 promotion record.
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

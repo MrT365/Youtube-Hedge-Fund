@@ -15,12 +15,11 @@ get_db_path-with-config test guards on config availability so this test file
 runs cleanly in isolation. Once 00-02 merges, the test exercises the real
 Config without modification.
 """
+
 from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
-
-import pytest
 
 from ls_equity_fund.db import PRAGMAS, get_connection, get_db_path
 

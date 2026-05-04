@@ -4,10 +4,12 @@ Phase 0 declares the abstract surface. Phase 1 ships YFinanceProvider as the
 default concrete; future paid feeds (Polygon, Tiingo, IEX) plug in here without
 rewriting downstream layers.
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from datetime import date
+from typing import Any
 
 import pandas as pd
 
@@ -36,11 +38,11 @@ class MarketDataProvider(ABC):
         """
 
     @abstractmethod
-    def get_short_interest(self, ticker: str, asof: date) -> dict | None:
+    def get_short_interest(self, ticker: str, asof: date) -> dict[str, Any] | None:
         """Return short-interest snapshot or None if no data for asof."""
 
     @abstractmethod
-    def get_estimates(self, ticker: str, asof: date) -> dict | None:
+    def get_estimates(self, ticker: str, asof: date) -> dict[str, Any] | None:
         """Return analyst estimates snapshot or None if no data for asof."""
 
 

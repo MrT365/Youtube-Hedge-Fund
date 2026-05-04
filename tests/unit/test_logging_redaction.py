@@ -3,6 +3,7 @@
 Each test maps to a `<must_haves>.truths` entry in 00-04-PLAN.md and to a locked
 decision in 00-CONTEXT.md (D-16 .. D-20).
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -64,9 +65,7 @@ def reset_logging(monkeypatch: pytest.MonkeyPatch):
 # Truth 1 (D-18): allowlist-by-key redaction
 # ---------------------------------------------------------------------------
 def test_allowlist_redaction_by_key() -> None:
-    out = redaction_processor(
-        None, "info", {"api_key": "anything-here", "user": "alice"}
-    )
+    out = redaction_processor(None, "info", {"api_key": "anything-here", "user": "alice"})
     assert out["api_key"] == REDACTED_PLACEHOLDER
     assert out["user"] == "alice"
 
@@ -81,17 +80,13 @@ def test_allowlist_is_case_insensitive() -> None:
 # Truth 2 (D-18): regex on string values for non-allowlisted keys
 # ---------------------------------------------------------------------------
 def test_regex_redaction_on_string_value() -> None:
-    out = redaction_processor(
-        None, "info", {"message": "got token: sk-ant-FAKEKEY12345"}
-    )
+    out = redaction_processor(None, "info", {"message": "got token: sk-ant-FAKEKEY12345"})
     assert "sk-ant-FAKEKEY12345" not in out["message"]
     assert REDACTED_PLACEHOLDER in out["message"]
 
 
 def test_bearer_token_regex() -> None:
-    out = redaction_processor(
-        None, "info", {"headers": "Authorization: Bearer abc.DEF-123"}
-    )
+    out = redaction_processor(None, "info", {"headers": "Authorization: Bearer abc.DEF-123"})
     assert "Bearer abc.DEF-123" not in out["headers"]
     assert REDACTED_PLACEHOLDER in out["headers"]
 
@@ -192,9 +187,7 @@ def test_dual_sink_writes_to_file(tmp_path: Path) -> None:
     cfg = LoggingConfig(level="INFO", log_dir=str(tmp_path))
     configure_logging(cfg)
 
-    structlog.get_logger("dual_sink_test").info(
-        "hello_file", marker="WRITE_ME_TO_FILE"
-    )
+    structlog.get_logger("dual_sink_test").info("hello_file", marker="WRITE_ME_TO_FILE")
     _flush_root_handlers()
 
     log_file = tmp_path / f"{_today_utc()}.jsonl"
@@ -260,9 +253,7 @@ def test_file_sink_uses_json_regardless_of_tty(
     )
 
 
-def test_renderer_selection_when_non_tty(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_renderer_selection_when_non_tty(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """When stderr is NOT a TTY, stderr handler also uses JSON (D-16)."""
     monkeypatch.setattr("sys.stderr.isatty", lambda: False)
 
@@ -273,25 +264,20 @@ def test_renderer_selection_when_non_tty(
     stream_handlers = [
         h
         for h in logging.getLogger().handlers
-        if isinstance(h, logging.StreamHandler)
-        and not isinstance(h, logging.FileHandler)
+        if isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler)
     ]
     assert stream_handlers, "no stderr StreamHandler attached"
     formatter = stream_handlers[0].formatter
     # ProcessorFormatter stores the chain in .processors — the renderer is the
     # final element in the tuple. (structlog>=22 API)
-    procs = getattr(formatter, "processors", None) or (
-        getattr(formatter, "processor", None),
-    )
+    procs = getattr(formatter, "processors", None) or (getattr(formatter, "processor", None),)
     renderer = procs[-1]
     assert isinstance(renderer, structlog.processors.JSONRenderer), (
         f"Expected JSONRenderer when isatty=False, got {type(renderer).__name__}"
     )
 
 
-def test_renderer_selection_when_tty(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_renderer_selection_when_tty(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """When stderr IS a TTY, stderr handler uses ConsoleRenderer (D-16)."""
     monkeypatch.setattr("sys.stderr.isatty", lambda: True)
 
@@ -301,14 +287,11 @@ def test_renderer_selection_when_tty(
     stream_handlers = [
         h
         for h in logging.getLogger().handlers
-        if isinstance(h, logging.StreamHandler)
-        and not isinstance(h, logging.FileHandler)
+        if isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler)
     ]
     assert stream_handlers, "no stderr StreamHandler attached"
     formatter = stream_handlers[0].formatter
-    procs = getattr(formatter, "processors", None) or (
-        getattr(formatter, "processor", None),
-    )
+    procs = getattr(formatter, "processors", None) or (getattr(formatter, "processor", None),)
     renderer = procs[-1]
     assert isinstance(renderer, structlog.dev.ConsoleRenderer), (
         f"Expected ConsoleRenderer when isatty=True, got {type(renderer).__name__}"
@@ -324,9 +307,7 @@ def test_stdlib_bridge_redacts(tmp_path: Path) -> None:
     configure_logging(cfg)
 
     third_party = logging.getLogger("anthropic")
-    third_party.error(
-        "request failed: api_key=sk-ant-LEAKY-FROM-STDLIB context=abc"
-    )
+    third_party.error("request failed: api_key=sk-ant-LEAKY-FROM-STDLIB context=abc")
     _flush_root_handlers()
 
     text = (tmp_path / f"{_today_utc()}.jsonl").read_text(encoding="utf-8")

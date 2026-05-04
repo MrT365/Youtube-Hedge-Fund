@@ -8,6 +8,7 @@ Per ARCHITECTURE.md §4 and CONTEXT D-01..D-05:
 This module is intentionally tiny: connection setup + path resolution. Schema lives
 exclusively in `migrations/versions/`.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -25,15 +26,15 @@ if TYPE_CHECKING:  # pragma: no cover — type-only import
 # assert the contract directly (test_pragmas_constant_complete).
 PRAGMAS: list[str] = [
     "PRAGMA journal_mode=WAL",
-    "PRAGMA synchronous=NORMAL",       # safe + fast under WAL
+    "PRAGMA synchronous=NORMAL",  # safe + fast under WAL
     "PRAGMA foreign_keys=ON",
-    "PRAGMA busy_timeout=5000",        # 5s wait before raising "database is locked"
-    "PRAGMA cache_size=-65536",        # 64MB page cache (negative => KiB)
+    "PRAGMA busy_timeout=5000",  # 5s wait before raising "database is locked"
+    "PRAGMA cache_size=-65536",  # 64MB page cache (negative => KiB)
     "PRAGMA temp_store=MEMORY",
 ]
 
 
-def get_db_path(config: "Config | None" = None) -> Path:
+def get_db_path(config: Config | None = None) -> Path:
     """Resolve the SQLite path from config.data.cache_dir.
 
     If `config` is None, falls back to reading `ls_equity_fund.config.load_config()`.
@@ -45,7 +46,7 @@ def get_db_path(config: "Config | None" = None) -> Path:
         # Lazy import — keeps this module importable even when config.py is not yet
         # ship-ed (Phase 0 parallel-execution window). Real callers always pass a
         # Config explicitly; this branch is a convenience for env.py.
-        from ls_equity_fund.config import load_config  # noqa: PLC0415
+        from ls_equity_fund.config import load_config
 
         config, _ = load_config()
     cache_dir = Path(config.data.cache_dir)
@@ -89,4 +90,4 @@ def get_connection(
     return conn
 
 
-__all__ = ["PRAGMAS", "get_db_path", "get_connection"]
+__all__ = ["PRAGMAS", "get_connection", "get_db_path"]

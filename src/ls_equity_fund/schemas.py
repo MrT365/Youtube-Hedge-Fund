@@ -4,6 +4,7 @@ Per ARCHITECTURE.md §5: Pydantic models for control / config; pandas DataFrames
 Per CONTEXT D-09: Phase 0 ships a minimal Order/Position/OrderId surface.
                   Phase 8 will EXPAND with broker_order_id, fills[], slippage_bps, etc.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -11,7 +12,6 @@ from enum import StrEnum
 from typing import NewType
 
 from pydantic import BaseModel, ConfigDict, Field
-
 
 # Phase 0: order_id is a string. Phase 8 may switch to UUID-typed if useful.
 OrderId = NewType("OrderId", str)
@@ -42,7 +42,7 @@ class Order(BaseModel):
     order_id: OrderId
     ticker: str
     side: Side
-    qty: int = Field(gt=0)        # always positive; side determines direction
+    qty: int = Field(gt=0)  # always positive; side determines direction
     signal_price: float = Field(gt=0)
     status: OrderStatus = OrderStatus.PENDING
     fill_price: float | None = None
@@ -55,8 +55,8 @@ class Position(BaseModel):
     model_config = ConfigDict(frozen=False, extra="forbid")
 
     ticker: str
-    qty: int                       # signed: + long, - short, 0 = no position (typically pruned)
+    qty: int  # signed: + long, - short, 0 = no position (typically pruned)
     avg_cost: float
 
 
-__all__ = ["OrderId", "Side", "OrderStatus", "Order", "Position"]
+__all__ = ["Order", "OrderId", "OrderStatus", "Position", "Side"]

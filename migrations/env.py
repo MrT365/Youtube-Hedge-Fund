@@ -12,6 +12,7 @@ This env.py:
   3. Does NOT use SQLAlchemy MetaData — target_metadata is None on purpose
      (autogenerate is deliberately disabled per D-01).
 """
+
 from __future__ import annotations
 
 from logging.config import fileConfig
@@ -40,8 +41,8 @@ def _resolve_db_url() -> str:
     always hits branch 1.
     """
     try:
-        from ls_equity_fund.config import load_config  # noqa: PLC0415
-        from ls_equity_fund.db import get_db_path  # noqa: PLC0415
+        from ls_equity_fund.config import load_config
+        from ls_equity_fund.db import get_db_path
     except ImportError:
         # config.py is not yet on the import path (Phase 0 parallel-execution
         # window). Fall back to the stub URL in alembic.ini.

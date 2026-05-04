@@ -225,10 +225,11 @@ def load_config(
     # Secrets uses its own env_file; pass through env_path when caller customizes (tests).
     # The required fields (anthropic_api_key, sec_user_agent) are populated from .env /
     # env vars by pydantic-settings — mypy can't see that, hence the call-arg ignore.
-    if env_path is not None:
-        secrets = Secrets(_env_file=str(env_path))  # type: ignore[call-arg]
-    else:
-        secrets = Secrets()  # type: ignore[call-arg]
+    secrets = (
+        Secrets(_env_file=str(env_path))  # type: ignore[call-arg]
+        if env_path is not None
+        else Secrets()  # type: ignore[call-arg]
+    )
 
     return config, secrets
 

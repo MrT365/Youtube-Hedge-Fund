@@ -5,6 +5,7 @@ Phase 0 ships:
   - Broker seam (execution/base.py)
   - PaperBroker concrete (execution/paper_broker.py) - deterministic-fill contract
 """
+
 from ls_equity_fund.execution.base import Broker
 from ls_equity_fund.execution.paper_broker import PaperBroker
 

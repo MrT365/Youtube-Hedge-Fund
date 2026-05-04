@@ -10,12 +10,12 @@ Revision ID: 0001
 Revises:
 Create Date: 2026-05-04 12:00:00 UTC
 """
+
 from __future__ import annotations
 
 from collections.abc import Sequence
 
 from alembic import op
-
 
 # revision identifiers, used by Alembic.
 revision: str = "0001"

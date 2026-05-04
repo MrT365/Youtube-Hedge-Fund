@@ -11,6 +11,7 @@ Tests run alembic programmatically via alembic.config.Config + alembic.command.u
 against a tmp_path-derived DB so they're independent of the operator's config.yaml
 and of plan 00-02's load_config implementation timing.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -21,7 +22,6 @@ from alembic import command
 from alembic.config import Config as AlembicConfig
 
 from ls_equity_fund.db import get_connection
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 ALEMBIC_INI = REPO_ROOT / "alembic.ini"
@@ -46,12 +46,8 @@ def _make_alembic_config(db_path: Path) -> AlembicConfig:
 def test_initial_migration_uses_raw_sql() -> None:
     """Test 5: migration file uses op.execute (D-01) and NOT op.create_table."""
     text = INITIAL_MIGRATION.read_text()
-    assert "op.execute(" in text, (
-        "Initial migration must use op.execute (raw SQL per D-01)"
-    )
-    assert "op.create_table(" not in text, (
-        "op.create_table is forbidden per D-01 — use op.execute"
-    )
+    assert "op.execute(" in text, "Initial migration must use op.execute (raw SQL per D-01)"
+    assert "op.create_table(" not in text, "op.create_table is forbidden per D-01 — use op.execute"
     # Count op.execute calls — runs CREATE, runs INDEX, heartbeat CREATE,
     # heartbeat INSERT, plus 3 in downgrade. Acceptance criteria: at least 4.
     assert text.count("op.execute(") >= 4, (
@@ -146,9 +142,7 @@ def test_heartbeat_singleton_row(tmp_path: Path) -> None:
     conn = get_connection(db_path)
     try:
         rows = list(
-            conn.execute(
-                "SELECT id, last_run_id, last_heartbeat_ts, last_status FROM heartbeat"
-            )
+            conn.execute("SELECT id, last_run_id, last_heartbeat_ts, last_status FROM heartbeat")
         )
         assert len(rows) == 1
         assert rows[0]["id"] == 1
@@ -184,9 +178,7 @@ def test_upgrade_idempotent(tmp_path: Path) -> None:
         assert tables == {"runs", "heartbeat", "alembic_version"}
 
         # alembic_version row count is exactly 1 (current head).
-        version_count = conn.execute(
-            "SELECT COUNT(*) FROM alembic_version"
-        ).fetchone()[0]
+        version_count = conn.execute("SELECT COUNT(*) FROM alembic_version").fetchone()[0]
         assert version_count == 1
 
         # Heartbeat singleton still exactly 1 row (idempotent re-run did not duplicate).

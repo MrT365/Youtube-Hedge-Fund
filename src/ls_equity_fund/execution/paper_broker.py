@@ -9,15 +9,15 @@ This stub lets the L4 -> L5 -> L6 spine be exercised in unit tests before any
 IBKR connection exists. The slippage tracker (Phase 8 EXEC-04) will record 0 bps
 against PaperBroker, which is the known/expected baseline.
 """
+
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import structlog
 
 from ls_equity_fund.execution.base import Broker
 from ls_equity_fund.schemas import Order, OrderId, OrderStatus, Position, Side
-
 
 log = structlog.get_logger(__name__)
 
@@ -54,8 +54,8 @@ class PaperBroker(Broker):
         filled = order.model_copy(
             update={
                 "status": OrderStatus.FILLED,
-                "fill_price": order.signal_price,    # D-06: zero slippage
-                "fill_ts": datetime.now(timezone.utc),
+                "fill_price": order.signal_price,  # D-06: zero slippage
+                "fill_ts": datetime.now(UTC),
             }
         )
         self._orders[order.order_id] = filled
@@ -123,9 +123,8 @@ class PaperBroker(Broker):
             return
 
         # Same-direction add: weighted avg_cost.
-        same_direction = (
-            (existing.qty > 0 and signed_qty > 0)
-            or (existing.qty < 0 and signed_qty < 0)
+        same_direction = (existing.qty > 0 and signed_qty > 0) or (
+            existing.qty < 0 and signed_qty < 0
         )
         if same_direction:
             existing_notional = abs(existing.qty) * existing.avg_cost

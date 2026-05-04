@@ -38,6 +38,7 @@ Public API:
     REDACT_PATTERNS             — the 2 explicit regexes (D-18)
     REDACTED_PLACEHOLDER        — ``"***REDACTED***"``
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -260,7 +261,7 @@ def configure_logging(config: LoggingConfig) -> None:
             structlog.processors.add_log_level,
             structlog.processors.TimeStamper(fmt="iso", utc=True),
             structlog.stdlib.add_logger_name,
-            redaction_processor,
+            redaction_processor,  # type: ignore[list-item]  # default kwargs make this 3-arg-callable
             structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
         ],
         wrapper_class=structlog.stdlib.BoundLogger,
