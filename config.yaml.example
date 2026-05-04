@@ -1,0 +1,73 @@
+# Meridian Capital Partners — Runtime Configuration
+# Copy this file to config.yaml and adjust per-machine values.
+# config.yaml is gitignored; config.yaml.example is committed.
+#
+# Secrets do NOT live here — they live in .env (see .env.example).
+# Pydantic-settings validates this file at startup; bad values fail loud.
+
+data:
+  provider: yfinance        # yfinance (v1 default) | polygon | tiingo | iex
+  universe_mode: liquid_us  # sp500 | liquid_us | scanner_seed
+  lookback_years: 3
+  benchmark: SPY
+  cache_dir: cache
+
+broker:
+  paper_host: 127.0.0.1
+  paper_port: 7497          # IBKR paper TWS default
+  live_port: 7496           # IBKR live TWS default
+  client_id: 17
+  mode: paper               # paper | live (live requires MERIDIAN_LIVE_OK=1 + AUDIT-03)
+
+risk:
+  factor_model_window_days: 120
+  veto_checks:
+    - halt_lock
+    - earnings_blackout
+    - liquidity_adv
+    - position_max
+    - sector_max
+    - exposure_bounds
+    - net_beta
+    - pairwise_correlation
+  breakers:
+    daily_loss_pct: -1.5
+    daily_loss_pct_hard: -2.5
+    weekly_loss_pct: -4.0
+    drawdown_pct: -8.0
+    single_position_pct: 3.0
+
+portfolio:
+  optimizer: conviction      # conviction (Phase 5 default) | mvo (Phase 7 swap-in)
+  num_longs: 20
+  num_shorts: 20
+  max_position_pct: 0.05
+  max_sector_pct: 0.25
+  gross_target: 1.50
+  net_target_low: 0.0
+  net_target_high: 0.10
+  max_beta: 0.15
+  turnover_budget: 0.30
+  mvo_risk_aversion: 1.0
+
+anthropic:
+  model: claude-sonnet-4-5
+  cost_ceiling_usd: 25
+  cache_ttl_days: 30
+  prompt_caching: true
+  max_candidates: 40
+
+logging:
+  level: INFO
+  log_dir: logs
+  json_renderer_when_non_tty: true
+  redact_keys:
+    - api_key
+    - apikey
+    - password
+    - passwd
+    - token
+    - secret
+    - authorization
+    - auth
+    - key
