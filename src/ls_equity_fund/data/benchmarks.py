@@ -5,6 +5,7 @@ Writes to the `benchmarks` table with category in {benchmark, sector_etf, macro}
 Plan 04's OHLCV refresh reads this table to know which non-universe tickers
 to fetch prices for.
 """
+
 from __future__ import annotations
 
 import sqlite3

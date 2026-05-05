@@ -5,6 +5,7 @@ curl_cffi transport (CLAUDE.md mandate) + tenacity retries (CLAUDE.md mandate).
 Other inherited ABC methods (Fundamentals/ShortInterest/Estimates) are stubbed
 with NotImplementedError messages pointing at Plans 01-05 / 01-07.
 """
+
 from __future__ import annotations
 
 import sqlite3

@@ -12,6 +12,7 @@ The 30/60/90-day estimate-revisions factor (Phase 2) reconstructs revisions
 from these append-only daily snapshot rows — that is why snapshot_date is in
 the PK and INSERT OR IGNORE is the write semantics.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -73,7 +74,10 @@ def test_refresh_writes_one_row_per_ticker_today(setup) -> None:
     }
 
     result = refresh_estimates(
-        config_obj, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config_obj,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     assert result["ok"] == 1
     assert result["rows_written"] == 1
@@ -99,10 +103,16 @@ def test_idempotent_same_day(setup) -> None:
         "n_analysts": 10,
     }
     refresh_estimates(
-        config_obj, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config_obj,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     refresh_estimates(
-        config_obj, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config_obj,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     n = conn.execute("SELECT COUNT(*) FROM analyst_estimates").fetchone()[0]
     assert n == 1
@@ -115,14 +125,16 @@ def test_log_continue_on_yfinance_error(setup) -> None:
     fake.get_estimates.side_effect = YFinanceError("yahoo 502")
 
     result = refresh_estimates(
-        config_obj, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config_obj,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     assert result["failed"] == 1
     assert result["rows_written"] == 0
 
     rs = conn.execute(
-        "SELECT status, last_error FROM refresh_state "
-        "WHERE ticker='AAPL' AND feed_type='estimates'"
+        "SELECT status, last_error FROM refresh_state WHERE ticker='AAPL' AND feed_type='estimates'"
     ).fetchone()
     assert rs[0] == "FAILED"
     assert "yahoo 502" in (rs[1] or "")

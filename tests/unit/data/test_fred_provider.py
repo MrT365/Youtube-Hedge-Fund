@@ -1,4 +1,5 @@
 """FedScraperProvider unit tests using fixture HTML — no network."""
+
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -14,9 +15,7 @@ from ls_equity_fund.data.providers.fred_provider import (
     NetworkError,
 )
 
-FIXTURE = (
-    Path(__file__).parent.parent.parent / "fixtures" / "fomccalendars_fixture.html"
-)
+FIXTURE = Path(__file__).parent.parent.parent / "fixtures" / "fomccalendars_fixture.html"
 
 # Freeze well before the 2026 meetings so the today<=event<=cutoff filter
 # admits everything in the 2026 fixture for lookahead_days=1000.
@@ -34,9 +33,7 @@ def test_fixture_exists() -> None:
 
 def test_fomc_calendar_url_constant_is_fed_dot_gov() -> None:
     """Anti-rec guard: live source must be federalreserve.gov, not hardcoded dates."""
-    assert FOMC_CALENDAR_URL == (
-        "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
-    )
+    assert FOMC_CALENDAR_URL == ("https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm")
 
 
 @freeze_time(_FROZEN_NOW)
@@ -61,7 +58,8 @@ def test_meeting_date_is_decision_day(fixture_html: str) -> None:
     provider = FedScraperProvider(session=None)
     events = provider.fetch_macro_events(lookahead_days=1000, html=fixture_html)
     march = next(
-        e for e in events
+        e
+        for e in events
         if e["description"] == "FOMC Meeting (March)" and e["event_date_et"].startswith("2026")
     )
     assert march["event_date_et"] == "2026-03-18"  # day-range "17-18" → 18
@@ -108,8 +106,12 @@ def test_events_have_required_fields(fixture_html: str) -> None:
     provider = FedScraperProvider(session=None)
     events = provider.fetch_macro_events(lookahead_days=1000, html=fixture_html)
     required = {
-        "event_id", "event_type", "event_date_et",
-        "event_date_local", "description", "source",
+        "event_id",
+        "event_type",
+        "event_date_et",
+        "event_date_local",
+        "description",
+        "source",
     }
     for e in events:
         assert required.issubset(e.keys()), f"missing fields in {e}"
@@ -223,13 +225,21 @@ def test_no_hardcoded_dates_in_source() -> None:
     )
     # Explicit single-quoted year strings like '2025' / '2026' / '2027'
     quoted_years = _re.findall(r"['\"]20[2-9]\d['\"]", content)
-    assert quoted_years == [], (
-        f"hardcoded year string literals found: {quoted_years}"
-    )
+    assert quoted_years == [], f"hardcoded year string literals found: {quoted_years}"
     # Month names that would indicate hardcoded calendars
     for month in [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December",
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
     ]:
         # Allow month references in docstring/comments — only flag if
         # combined with a numeric date pattern that looks like a calendar entry.
@@ -243,6 +253,4 @@ def test_no_hardcoded_dates_in_source() -> None:
             text = match.group(0)
             # Anything that pairs a month with a number is a hardcoded date.
             if _re.search(r"\d", text):
-                pytest.fail(
-                    f"hardcoded calendar entry found in fred_provider.py: {text!r}"
-                )
+                pytest.fail(f"hardcoded calendar entry found in fred_provider.py: {text!r}")

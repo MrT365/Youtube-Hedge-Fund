@@ -10,6 +10,7 @@ Coverage map (matches 01-08-PLAN.md acceptance criteria):
   * test_upsert_is_idempotent                — re-running same events does NOT duplicate
   * test_local_tz_field_persisted            — event_date_local round-trips through UPSERT
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -51,9 +52,7 @@ def setup(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     # for downstream attribute access (and to keep refresh_macro_calendar's
     # signature honest).
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-key-do-not-use")
-    monkeypatch.setenv(
-        "SEC_USER_AGENT", "Meridian Capital Partners test@example.com"
-    )
+    monkeypatch.setenv("SEC_USER_AGENT", "Meridian Capital Partners test@example.com")
     config_obj, _ = load_config(yaml_path=str(repo_root / "config.yaml.example"))
     config_obj.data.cache_dir = str(tmp_path)
     yield config_obj, conn
@@ -83,6 +82,7 @@ def _events() -> list[dict[str, object]]:
 
 # ---------- happy path ----------
 
+
 def test_first_run_fetches_and_persists(setup) -> None:
     config_obj, conn = setup
     provider = MagicMock()
@@ -103,21 +103,19 @@ def test_first_run_fetches_and_persists(setup) -> None:
 
 # ---------- 7-day refresh-interval gating ----------
 
+
 def test_skips_when_within_refresh_interval(setup) -> None:
     config_obj, conn = setup
     three_days_ago = int(time.time()) - 3 * 86400
     conn.execute(
         "INSERT INTO macro_calendar (event_id, event_type, event_date_et, "
         "source, fetched_at, last_refreshed) VALUES (?, ?, ?, ?, ?, ?)",
-        ("seed", "FOMC", "2026-06-17", "federalreserve.gov",
-         three_days_ago, three_days_ago),
+        ("seed", "FOMC", "2026-06-17", "federalreserve.gov", three_days_ago, three_days_ago),
     )
     conn.commit()
 
     provider = MagicMock()
-    result = refresh_macro_calendar(
-        config_obj, conn=conn, today=date.today(), provider=provider
-    )
+    result = refresh_macro_calendar(config_obj, conn=conn, today=date.today(), provider=provider)
 
     assert result["events_written"] == 0
     assert result["fell_back"] is False
@@ -131,8 +129,7 @@ def test_force_overrides_interval(setup) -> None:
     conn.execute(
         "INSERT INTO macro_calendar (event_id, event_type, event_date_et, "
         "source, fetched_at, last_refreshed) VALUES (?, ?, ?, ?, ?, ?)",
-        ("seed", "FOMC", "2026-06-17", "federalreserve.gov",
-         one_day_ago, one_day_ago),
+        ("seed", "FOMC", "2026-06-17", "federalreserve.gov", one_day_ago, one_day_ago),
     )
     conn.commit()
 
@@ -148,6 +145,7 @@ def test_force_overrides_interval(setup) -> None:
 
 # ---------- cached-fallback semantics ----------
 
+
 def test_fall_back_to_cache_on_network_error(setup) -> None:
     """NetworkError must NOT raise to caller — daily run continues with cache."""
     config_obj, conn = setup
@@ -155,8 +153,7 @@ def test_fall_back_to_cache_on_network_error(setup) -> None:
     conn.execute(
         "INSERT INTO macro_calendar (event_id, event_type, event_date_et, "
         "source, fetched_at, last_refreshed) VALUES (?, ?, ?, ?, ?, ?)",
-        ("seed", "FOMC", "2026-06-17", "federalreserve.gov",
-         thirty_ago, thirty_ago),
+        ("seed", "FOMC", "2026-06-17", "federalreserve.gov", thirty_ago, thirty_ago),
     )
     conn.commit()
 
@@ -164,9 +161,7 @@ def test_fall_back_to_cache_on_network_error(setup) -> None:
     provider.fetch_macro_events.side_effect = NetworkError("DNS down")
 
     # Must not raise.
-    result = refresh_macro_calendar(
-        config_obj, conn=conn, today=date.today(), provider=provider
-    )
+    result = refresh_macro_calendar(config_obj, conn=conn, today=date.today(), provider=provider)
 
     assert result["fell_back"] is True
     assert result["events_written"] == 0
@@ -190,8 +185,7 @@ def test_fallback_within_7d_does_not_emit_stale_warning(
     conn.execute(
         "INSERT INTO macro_calendar (event_id, event_type, event_date_et, "
         "source, fetched_at, last_refreshed) VALUES (?, ?, ?, ?, ?, ?)",
-        ("seed", "FOMC", "2026-06-17", "federalreserve.gov",
-         five_ago, five_ago),
+        ("seed", "FOMC", "2026-06-17", "federalreserve.gov", five_ago, five_ago),
     )
     conn.commit()
 
@@ -216,26 +210,21 @@ def test_fallback_within_7d_does_not_emit_stale_warning(
     assert "macro_calendar_fetch_failed_falling_back" in combined
 
 
-def test_fallback_beyond_7d_emits_stale_warning(
-    setup, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_fallback_beyond_7d_emits_stale_warning(setup, capsys: pytest.CaptureFixture[str]) -> None:
     """Cache >=7d old + scrape fails → WARNING with `macro_calendar_stale_warning`."""
     config_obj, conn = setup
     fifteen_ago = int(time.time()) - 15 * 86400
     conn.execute(
         "INSERT INTO macro_calendar (event_id, event_type, event_date_et, "
         "source, fetched_at, last_refreshed) VALUES (?, ?, ?, ?, ?, ?)",
-        ("seed", "FOMC", "2026-06-17", "federalreserve.gov",
-         fifteen_ago, fifteen_ago),
+        ("seed", "FOMC", "2026-06-17", "federalreserve.gov", fifteen_ago, fifteen_ago),
     )
     conn.commit()
 
     provider = MagicMock()
     provider.fetch_macro_events.side_effect = NetworkError("DNS down")
 
-    result = refresh_macro_calendar(
-        config_obj, conn=conn, today=date.today(), provider=provider
-    )
+    result = refresh_macro_calendar(config_obj, conn=conn, today=date.today(), provider=provider)
 
     assert result["fell_back"] is True
     assert result["staleness_days"] >= STALENESS_WARN_THRESHOLD_DAYS
@@ -250,22 +239,24 @@ def test_fallback_beyond_7d_emits_stale_warning(
 
 # ---------- idempotency / UPSERT ----------
 
+
 def test_upsert_is_idempotent(setup) -> None:
     """Re-running with the same events MUST NOT duplicate rows."""
     config_obj, conn = setup
     provider = MagicMock()
     provider.fetch_macro_events.return_value = _events()
 
-    refresh_macro_calendar(
-        config_obj, conn=conn, today=date(2026, 1, 1), provider=provider
-    )
+    refresh_macro_calendar(config_obj, conn=conn, today=date(2026, 1, 1), provider=provider)
     n_first = conn.execute("SELECT COUNT(*) FROM macro_calendar").fetchone()[0]
     assert n_first == 2
 
     # Force second pass with the same event_ids.
     refresh_macro_calendar(
-        config_obj, conn=conn, today=date(2026, 1, 1),
-        provider=provider, force=True,
+        config_obj,
+        conn=conn,
+        today=date(2026, 1, 1),
+        provider=provider,
+        force=True,
     )
     n_second = conn.execute("SELECT COUNT(*) FROM macro_calendar").fetchone()[0]
     assert n_second == 2, f"UPSERT duplicated rows: {n_second}"
@@ -273,15 +264,14 @@ def test_upsert_is_idempotent(setup) -> None:
 
 # ---------- event_date_local persistence (D-19 timezone column) ----------
 
+
 def test_local_tz_field_persisted(setup) -> None:
     """event_date_local must round-trip through UPSERT for FOMC blackout queries."""
     config_obj, conn = setup
     provider = MagicMock()
     provider.fetch_macro_events.return_value = _events()
 
-    refresh_macro_calendar(
-        config_obj, conn=conn, today=date(2026, 1, 1), provider=provider
-    )
+    refresh_macro_calendar(config_obj, conn=conn, today=date(2026, 1, 1), provider=provider)
     rows = conn.execute(
         "SELECT event_id, event_date_et, event_date_local FROM macro_calendar "
         "ORDER BY event_date_et"
@@ -294,6 +284,7 @@ def test_local_tz_field_persisted(setup) -> None:
 
 
 # ---------- module-level constants surface ----------
+
 
 def test_refresh_interval_constant_is_seven() -> None:
     assert REFRESH_INTERVAL_DAYS == 7

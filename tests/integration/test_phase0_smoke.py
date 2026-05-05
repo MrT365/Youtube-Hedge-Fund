@@ -29,6 +29,7 @@ the actual JSONL file from disk and asserts (a) raw key absent, (b) the
 ``REDACTED_PLACEHOLDER`` literal present, (c) the ``api_key`` field on the
 parsed JSON object equals the placeholder.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -199,22 +200,22 @@ def test_sc1_pyproject_carries_required_pins() -> None:
     pyproject = (REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")
     # CLAUDE.md hard constraints — substring match (order-insensitive).
     required_substrings = [
-        'pandas>=2.2,<3.0',
-        'numpy>=2.0,<2.5',
-        'ib-async>=2.1',           # PyPI distribution name uses dash
-        'edgartools>=5.30,<6',
-        'anthropic>=0.97',
-        'scipy>=1.16,<1.18',
-        'structlog>=25.5',
-        'pydantic>=2.13',
-        'pydantic-settings>=2.6',
-        'pytest==9.0.3',
+        "pandas>=2.2,<3.0",
+        "numpy>=2.0,<2.5",
+        "ib-async>=2.1",  # PyPI distribution name uses dash
+        "edgartools>=5.30,<6",
+        "anthropic>=0.97",
+        "scipy>=1.16,<1.18",
+        "structlog>=25.5",
+        "pydantic>=2.13",
+        "pydantic-settings>=2.6",
+        "pytest==9.0.3",
     ]
     for needle in required_substrings:
         assert needle in pyproject, f"pyproject.toml missing pin: {needle!r}"
 
     # Anti-recommendation: ib_insync must not appear. ``requires-python`` floors at 3.11.
-    assert 'ib_insync' not in pyproject, "ib_insync forbidden by CLAUDE.md (deceased lib)"
+    assert "ib_insync" not in pyproject, "ib_insync forbidden by CLAUDE.md (deceased lib)"
     assert 'requires-python = ">=3.11' in pyproject
 
 
@@ -311,10 +312,7 @@ def test_sc2_doctor_runs_alembic_upgrade_to_head(doctor_workspace: Path) -> None
     conn = sqlite3.connect(str(db_path))
     try:
         tables = {
-            row[0]
-            for row in conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='table'"
-            )
+            row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
         }
         versions = list(conn.execute("SELECT version_num FROM alembic_version"))
     finally:

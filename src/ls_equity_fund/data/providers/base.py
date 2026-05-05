@@ -15,6 +15,7 @@ fred_provider.py, polygon_provider.py). The Phase 0 monolithic
 ``MarketDataProvider`` ABC at ``src/ls_equity_fund/data/base.py`` is RETAINED
 for backward compatibility with INFRA-03; these six siblings are additive.
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -33,9 +34,7 @@ class OHLCVProvider(ABC):
     """
 
     @abstractmethod
-    def get_prices(
-        self, tickers: list[str], start: date, end: date
-    ) -> pd.DataFrame:
+    def get_prices(self, tickers: list[str], start: date, end: date) -> pd.DataFrame:
         """Return OHLCV panel.
 
         Index: MultiIndex(['ticker', 'date']), sorted.
@@ -69,9 +68,7 @@ class ShortInterestProvider(ABC):
     """Daily short-interest snapshot (DATA-08)."""
 
     @abstractmethod
-    def get_short_interest(
-        self, ticker: str, asof: date
-    ) -> dict[str, Any] | None:
+    def get_short_interest(self, ticker: str, asof: date) -> dict[str, Any] | None:
         """Return ``{shares_short, short_ratio, short_percent_of_float}`` or None."""
 
 
@@ -79,9 +76,7 @@ class EstimatesProvider(ABC):
     """Daily analyst-estimates + earnings-calendar snapshot (DATA-09, DATA-10)."""
 
     @abstractmethod
-    def get_estimates(
-        self, ticker: str, asof: date
-    ) -> dict[str, Any] | None:
+    def get_estimates(self, ticker: str, asof: date) -> dict[str, Any] | None:
         """Return ``{eps_fy1, eps_fy2, rev_fy1, rev_fy2, target_price, n_analysts}`` or None."""
 
     @abstractmethod
@@ -114,9 +109,7 @@ class FilingsProvider(ABC):
         """
 
     @abstractmethod
-    def parse_form4(
-        self, accession_number: str, raw_xml_path: Path
-    ) -> list[dict[str, Any]]:
+    def parse_form4(self, accession_number: str, raw_xml_path: Path) -> list[dict[str, Any]]:
         """Parse Form 4 XML into per-line transactions.
 
         Returns list of ``{accession_number, line_no, ticker, insider_name,
@@ -129,9 +122,7 @@ class FilingsProvider(ABC):
         """
 
     @abstractmethod
-    def parse_13f(
-        self, accession_number: str, raw_path: Path
-    ) -> list[dict[str, Any]]:
+    def parse_13f(self, accession_number: str, raw_path: Path) -> list[dict[str, Any]]:
         """Parse 13F INFORMATION TABLE into per-position rows.
 
         Returns list of ``{cik, fund_name, ticker, period_end, filed_date,
@@ -145,9 +136,7 @@ class MacroProvider(ABC):
     """FOMC + macro event calendar (DATA-11)."""
 
     @abstractmethod
-    def fetch_macro_events(
-        self, lookahead_days: int = 365
-    ) -> list[dict[str, Any]]:
+    def fetch_macro_events(self, lookahead_days: int = 365) -> list[dict[str, Any]]:
         """Return list of ``{event_id, event_type, event_date_et,
         event_date_local, description, source}`` dicts within
         ``lookahead_days``.

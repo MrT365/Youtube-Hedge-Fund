@@ -11,6 +11,7 @@ NEVER use UPDATE / INSERT OR REPLACE against ``fundamentals``. The append-only
 discipline IS the v1 D2 mitigation; if you find yourself reaching for UPSERT,
 stop and re-read PITFALLS.md D2.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -65,9 +66,7 @@ def refresh_fundamentals(
             tickers = [
                 r[0]
                 for r in conn.execute(
-                    "SELECT ticker FROM universe "
-                    "WHERE delisted_date IS NULL "
-                    "ORDER BY ticker"
+                    "SELECT ticker FROM universe WHERE delisted_date IS NULL ORDER BY ticker"
                 )
             ]
         if provider is None:
@@ -95,7 +94,7 @@ def refresh_fundamentals(
                     log.error("fundamentals_fetch_failed", ticker=ticker, error=str(e))
                     _persist_refresh_state(conn, ticker, None, "FAILED", str(e)[:500])
                     failed += 1
-                except Exception as e:  # noqa: BLE001 — log+continue per orchestrator contract
+                except Exception as e:
                     log.error("fundamentals_unexpected_error", ticker=ticker, error=str(e))
                     _persist_refresh_state(conn, ticker, None, "FAILED", str(e)[:500])
                     failed += 1
@@ -108,9 +107,7 @@ def refresh_fundamentals(
             conn.close()
 
 
-def _persist_fundamentals(
-    conn: sqlite3.Connection, ticker: str, df: Any, today_str: str
-) -> int:
+def _persist_fundamentals(conn: sqlite3.Connection, ticker: str, df: Any, today_str: str) -> int:
     """APPEND-ONLY insert per (ticker, period_end, period_type, today).
 
     INSERT OR IGNORE means same-day reruns are no-ops (PK collision); future
@@ -157,8 +154,7 @@ def _persist_refresh_state(
            (provider, feed_type, ticker, last_value_text, last_value_int,
             last_refreshed, status, last_error)
            VALUES (?, ?, ?, ?, NULL, ?, ?, ?)""",
-        ("yfinance", "fundamentals", ticker, last_value_text,
-         int(time.time()), status, last_error),
+        ("yfinance", "fundamentals", ticker, last_value_text, int(time.time()), status, last_error),
     )
 
 

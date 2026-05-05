@@ -4,6 +4,7 @@ D2 (PITFALLS.md, CRITICAL): yfinance returns the most-recent restated
 fundamentals. v1 mitigation is APPEND-ONLY ingest keyed by today's
 ``as_of_ingest_date``. The bind test below exercises that contract directly.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -55,11 +56,22 @@ def config(setup_db, fresh_env_path, monkeypatch):
 def _make_fundamentals_df():
     return pd.DataFrame(
         [
-            {"period_end": "2025-12-31", "period_type": "annual",
-             "revenue": 100.0, "net_income": 20.0, "cfo": 25.0, "accruals": -5.0,
-             "total_assets": 500.0},
-            {"period_end": "2026-03-31", "period_type": "quarterly",
-             "revenue": 30.0, "net_income": 6.0, "cfo": 7.5},
+            {
+                "period_end": "2025-12-31",
+                "period_type": "annual",
+                "revenue": 100.0,
+                "net_income": 20.0,
+                "cfo": 25.0,
+                "accruals": -5.0,
+                "total_assets": 500.0,
+            },
+            {
+                "period_end": "2026-03-31",
+                "period_type": "quarterly",
+                "revenue": 30.0,
+                "net_income": 6.0,
+                "cfo": 7.5,
+            },
         ]
     ).set_index(["period_end", "period_type"])
 
@@ -70,7 +82,10 @@ def test_refresh_writes_with_today_as_ingest_date(setup_db, config) -> None:
     fake.get_fundamentals.return_value = _make_fundamentals_df()
 
     result = refresh_fundamentals(
-        config, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     assert result["ok"] == 1
     assert result["rows_written"] == 2
@@ -154,7 +169,10 @@ def test_log_and_continue_on_provider_error(setup_db, config) -> None:
 
     fake.get_fundamentals.side_effect = fundamentals_by_ticker
     result = refresh_fundamentals(
-        config, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     assert result["ok"] == 1
     assert result["failed"] == 1
@@ -180,9 +198,7 @@ def test_excludes_delisted_tickers(setup_db, config) -> None:
     fake.get_fundamentals.return_value = _make_fundamentals_df()
     refresh_fundamentals(config, conn=conn, today=date(2026, 4, 1), provider=fake)
     # ENRN not fetched
-    enrn_rows = conn.execute(
-        "SELECT * FROM fundamentals WHERE ticker='ENRN'"
-    ).fetchall()
+    enrn_rows = conn.execute("SELECT * FROM fundamentals WHERE ticker='ENRN'").fetchall()
     assert enrn_rows == []
     # AAPL was fetched
     assert fake.get_fundamentals.call_count == 1

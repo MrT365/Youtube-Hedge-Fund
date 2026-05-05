@@ -20,6 +20,7 @@ Refresh semantics (plan 01-08):
   operator notices, but the daily run NEVER raises here — that would
   prevent the Phase 9 spine from completing.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -106,9 +107,7 @@ def refresh_macro_calendar(
                 "staleness_days": 0,
             }
         except NetworkError as e:
-            log.warning(
-                "macro_calendar_fetch_failed_falling_back", error=str(e)
-            )
+            log.warning("macro_calendar_fetch_failed_falling_back", error=str(e))
             staleness = days_since if days_since is not None else 9999
             if staleness >= STALENESS_WARN_THRESHOLD_DAYS:
                 log.warning(
@@ -126,9 +125,7 @@ def refresh_macro_calendar(
             conn.close()
 
 
-def _persist_events(
-    conn: sqlite3.Connection, events: list[dict[str, Any]]
-) -> int:
+def _persist_events(conn: sqlite3.Connection, events: list[dict[str, Any]]) -> int:
     now = int(time.time())
     n = 0
     for ev in events:
@@ -153,9 +150,7 @@ def _persist_events(
 
 
 def _max_last_refreshed(conn: sqlite3.Connection) -> int | None:
-    row = conn.execute(
-        "SELECT MAX(last_refreshed) FROM macro_calendar"
-    ).fetchone()
+    row = conn.execute("SELECT MAX(last_refreshed) FROM macro_calendar").fetchone()
     if row is None:
         return None
     val = row[0]

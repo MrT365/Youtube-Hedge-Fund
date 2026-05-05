@@ -13,6 +13,7 @@ blackout veto reads only forward-looking rows.
 Per PITFALLS D6: yfinance earnings dates are noisy. We record what
 yfinance reports; downstream Phase 5 applies a 5-day buffer.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -68,8 +69,7 @@ def refresh_earnings_calendar(
             tickers = [
                 r[0]
                 for r in conn.execute(
-                    "SELECT ticker FROM universe "
-                    "WHERE delisted_date IS NULL ORDER BY ticker"
+                    "SELECT ticker FROM universe WHERE delisted_date IS NULL ORDER BY ticker"
                 )
             ]
         if provider is None:
@@ -82,14 +82,9 @@ def refresh_earnings_calendar(
         )
 
         ok = failed = rows_written = 0
-        with ThreadPoolExecutor(
-            max_workers=config.data.yfinance_max_workers
-        ) as pool:
+        with ThreadPoolExecutor(max_workers=config.data.yfinance_max_workers) as pool:
             futures = {
-                pool.submit(
-                    provider.get_next_earnings_dates, t, lookahead_days
-                ): t
-                for t in tickers
+                pool.submit(provider.get_next_earnings_dates, t, lookahead_days): t for t in tickers
             }
             for fut in as_completed(futures):
                 ticker = futures[fut]
@@ -118,9 +113,7 @@ def refresh_earnings_calendar(
                         ticker=ticker,
                         error=str(e),
                     )
-                    _persist_state(
-                        conn, ticker, None, "FAILED", str(e)[:500]
-                    )
+                    _persist_state(conn, ticker, None, "FAILED", str(e)[:500])
                     failed += 1
                 except Exception as e:
                     log.error(
@@ -128,9 +121,7 @@ def refresh_earnings_calendar(
                         ticker=ticker,
                         error=str(e),
                     )
-                    _persist_state(
-                        conn, ticker, None, "FAILED", str(e)[:500]
-                    )
+                    _persist_state(conn, ticker, None, "FAILED", str(e)[:500])
                     failed += 1
 
         result = {"ok": ok, "failed": failed, "rows_written": rows_written}

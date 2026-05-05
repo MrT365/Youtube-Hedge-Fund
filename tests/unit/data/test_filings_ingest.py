@@ -8,6 +8,7 @@ Covers:
   - Multi-fund openings detection
   - Anti-hardcoded fund-name guard (CLAUDE.md)
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -28,7 +29,6 @@ from ls_equity_fund.data.institutional import (
     detect_multi_fund_openings,
     refresh_institutional_holdings,
 )
-
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -88,7 +88,7 @@ def fake_secrets():
 def test_refresh_filings_persists_metadata_and_parses_form4(
     populated_db, fake_config, fake_secrets
 ) -> None:
-    db, conn = populated_db
+    _db, conn = populated_db
     fixture = REPO_ROOT / "tests" / "fixtures" / "form4_p_purchase.xml"
 
     fake_provider = MagicMock()
@@ -147,11 +147,9 @@ def test_refresh_filings_persists_metadata_and_parses_form4(
     assert fm["transaction_code"] == "P"
 
 
-def test_refresh_filings_idempotent_on_repeat(
-    populated_db, fake_config, fake_secrets
-) -> None:
+def test_refresh_filings_idempotent_on_repeat(populated_db, fake_config, fake_secrets) -> None:
     """Idempotency: re-running with same accession does NOT duplicate rows."""
-    db, conn = populated_db
+    _db, conn = populated_db
     fixture = REPO_ROOT / "tests" / "fixtures" / "form4_p_purchase.xml"
 
     fake_provider = MagicMock()
@@ -189,22 +187,28 @@ def test_refresh_filings_idempotent_on_repeat(
     ]
 
     refresh_filings(
-        fake_config, fake_secrets, conn=conn, forms=["4"],
-        tickers=["AAPL"], today=date(2026, 4, 16), provider=fake_provider,
+        fake_config,
+        fake_secrets,
+        conn=conn,
+        forms=["4"],
+        tickers=["AAPL"],
+        today=date(2026, 4, 16),
+        provider=fake_provider,
     )
     refresh_filings(
-        fake_config, fake_secrets, conn=conn, forms=["4"],
-        tickers=["AAPL"], today=date(2026, 4, 16), provider=fake_provider,
+        fake_config,
+        fake_secrets,
+        conn=conn,
+        forms=["4"],
+        tickers=["AAPL"],
+        today=date(2026, 4, 16),
+        provider=fake_provider,
     )
 
     # Both filings_metadata and insider_transactions are PK-keyed; INSERT OR
     # IGNORE keeps row count at 1.
-    assert conn.execute(
-        "SELECT COUNT(*) FROM filings_metadata"
-    ).fetchone()[0] == 1
-    assert conn.execute(
-        "SELECT COUNT(*) FROM insider_transactions"
-    ).fetchone()[0] == 1
+    assert conn.execute("SELECT COUNT(*) FROM filings_metadata").fetchone()[0] == 1
+    assert conn.execute("SELECT COUNT(*) FROM insider_transactions").fetchone()[0] == 1
 
 
 # ---------- cluster-buy detection ----------
@@ -238,9 +242,7 @@ def test_cluster_buys_below_threshold_excluded(populated_db) -> None:
         "insider_name, transaction_code, transaction_date, filed_date, total_value) "
         "VALUES ('x', 1, 'AAPL', 'X', 'P', '2026-04-15', '2026-04-15', 100.0)"
     )
-    clusters = detect_cluster_buys(
-        conn, today=date(2026, 4, 30), min_insiders=3
-    )
+    clusters = detect_cluster_buys(conn, today=date(2026, 4, 30), min_insiders=3)
     assert clusters == []
 
 
@@ -295,8 +297,7 @@ def test_13f_45_day_lag_preserved_via_separate_columns(populated_db) -> None:
                    1000000, 185000000, 100000, 0)"""
     )
     row = conn.execute(
-        "SELECT period_end, filed_date FROM institutional_holdings "
-        "WHERE ticker='AAPL'"
+        "SELECT period_end, filed_date FROM institutional_holdings WHERE ticker='AAPL'"
     ).fetchone()
     assert row["period_end"] == "2026-03-31"
     assert row["filed_date"] == "2026-05-15"
@@ -346,8 +347,7 @@ def test_refresh_13f_persists_period_end_and_filed_date(
     assert result["rows_written"] == 2
 
     rows = conn.execute(
-        "SELECT period_end, filed_date FROM institutional_holdings "
-        "WHERE ticker='AAPL' ORDER BY cik"
+        "SELECT period_end, filed_date FROM institutional_holdings WHERE ticker='AAPL' ORDER BY cik"
     ).fetchall()
     assert len(rows) == 2
     for row in rows:
@@ -367,9 +367,7 @@ def test_multi_fund_openings(populated_db) -> None:
     conn.execute(base, ("c2", "Fund2", 200))
     conn.execute(base, ("c3", "Fund3", 300))
 
-    out = detect_multi_fund_openings(
-        conn, period_end="2026-03-31", min_funds=3
-    )
+    out = detect_multi_fund_openings(conn, period_end="2026-03-31", min_funds=3)
     assert len(out) == 1
     assert out[0]["ticker"] == "XYZ"
     assert out[0]["new_funds"] == 3
@@ -380,9 +378,7 @@ def test_multi_fund_openings(populated_db) -> None:
 
 def test_no_hardcoded_fund_names_in_institutional_module() -> None:
     """CLAUDE.md anti-recommendation — fund names live in config, not source."""
-    src = (
-        REPO_ROOT / "src" / "ls_equity_fund" / "data" / "institutional.py"
-    ).read_text()
+    src = (REPO_ROOT / "src" / "ls_equity_fund" / "data" / "institutional.py").read_text()
     forbidden = ["Citadel", "Berkshire", "Pershing", "Bridgewater", "Tiger Global"]
     for name in forbidden:
         assert name not in src, (
@@ -392,11 +388,7 @@ def test_no_hardcoded_fund_names_in_institutional_module() -> None:
 
 
 def test_no_hardcoded_fund_names_in_filings_module() -> None:
-    src = (
-        REPO_ROOT / "src" / "ls_equity_fund" / "data" / "filings.py"
-    ).read_text()
+    src = (REPO_ROOT / "src" / "ls_equity_fund" / "data" / "filings.py").read_text()
     forbidden = ["Citadel", "Berkshire", "Pershing", "Bridgewater", "Tiger Global"]
     for name in forbidden:
-        assert name not in src, (
-            f"Hardcoded fund name '{name}' in filings.py"
-        )
+        assert name not in src, f"Hardcoded fund name '{name}' in filings.py"

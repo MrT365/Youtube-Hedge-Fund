@@ -5,6 +5,7 @@ Verifies the six Phase 1 sibling provider ABCs are abstract, that the
 the swap-in seam works), and that every Polygon method raises
 ``NotImplementedError`` with a "DATA-14" reference until the v1.x milestone.
 """
+
 from __future__ import annotations
 
 from datetime import date

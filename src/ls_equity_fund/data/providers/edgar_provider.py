@@ -19,13 +19,14 @@ distinct and meaningful. The parser persists each row's code as the literal
 letter; the schema CHECK constraint at the DB layer (migration 0002) rejects
 anything outside the seven-letter set.
 """
+
 from __future__ import annotations
 
 import hashlib
 import re
 from datetime import date
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import structlog
 
@@ -42,16 +43,12 @@ log = structlog.get_logger(__name__)
 #   F = payment of tax-withholding (NOT directional)
 #   G = bona fide gift (NOT directional)
 #   D = disposition non-open-market (NOT directional)
-VALID_TRANSACTION_CODES: frozenset[str] = frozenset(
-    {"P", "S", "A", "M", "F", "G", "D"}
-)
+VALID_TRANSACTION_CODES: frozenset[str] = frozenset({"P", "S", "A", "M", "F", "G", "D"})
 
 # CEO/CFO title detector — hits "Chief Executive Officer", "Chief Financial Officer",
 # bare "CEO" / "CFO" (word-boundary anchored), case-insensitive. Doesn't match
 # "Director", "VP Engineering", or other non-CEO/CFO officer titles.
-CEO_CFO_TITLE_RE = re.compile(
-    r"(?i)(chief\s+(executive|financial)\s+officer|\b(?:CEO|CFO)\b)"
-)
+CEO_CFO_TITLE_RE = re.compile(r"(?i)(chief\s+(executive|financial)\s+officer|\b(?:CEO|CFO)\b)")
 
 
 class EdgarProvider(FilingsProvider):
@@ -73,7 +70,7 @@ class EdgarProvider(FilingsProvider):
         # edgartools sets identity globally — call once at init. Soft-fail on
         # ImportError so unit tests that only exercise lxml parsing still run.
         try:
-            from edgar import set_identity  # type: ignore[import-not-found]
+            from edgar import set_identity
 
             set_identity(sec_user_agent)
         except ImportError:
@@ -98,7 +95,7 @@ class EdgarProvider(FilingsProvider):
         Idempotent on repeated calls: existing files are not re-fetched.
         """
         try:
-            from edgar import Company  # type: ignore[import-not-found]
+            from edgar import Company
         except ImportError:
             log.error("edgartools_not_installed_cannot_fetch")
             return []
@@ -112,9 +109,7 @@ class EdgarProvider(FilingsProvider):
         try:
             company = Company(ticker)
         except Exception as exc:
-            log.error(
-                "edgar_company_lookup_failed", ticker=ticker, error=str(exc)
-            )
+            log.error("edgar_company_lookup_failed", ticker=ticker, error=str(exc))
             return results
 
         try:
@@ -122,9 +117,7 @@ class EdgarProvider(FilingsProvider):
             if since is not None:
                 filings = filings.filter(filing_date=f"{since.isoformat()}:")
         except Exception as exc:
-            log.error(
-                "edgar_filings_fetch_failed", ticker=ticker, error=str(exc)
-            )
+            log.error("edgar_filings_fetch_failed", ticker=ticker, error=str(exc))
             return results
 
         for filing in filings:
@@ -134,19 +127,13 @@ class EdgarProvider(FilingsProvider):
                 ext = "xml" if form_type in ("4", "13F-HR") else "txt"
                 filepath = ticker_dir / f"{accession}.{ext}"
                 if not filepath.exists():
-                    body = (
-                        filing.text() if ext == "txt" else filing.xml()
-                    ) or ""
+                    body = (filing.text() if ext == "txt" else filing.xml()) or ""
                     filepath.write_text(body, encoding="utf-8")
                 content_hash = hashlib.sha256(filepath.read_bytes()).hexdigest()
                 period = (
                     filing.period_of_report.isoformat()
                     if hasattr(filing.period_of_report, "isoformat")
-                    else (
-                        str(filing.period_of_report)
-                        if filing.period_of_report
-                        else None
-                    )
+                    else (str(filing.period_of_report) if filing.period_of_report else None)
                 )
                 filed_date = (
                     filing.filing_date.isoformat()
@@ -174,9 +161,7 @@ class EdgarProvider(FilingsProvider):
                 continue
         return results
 
-    def parse_form4(
-        self, accession_number: str, raw_xml_path: Path
-    ) -> list[dict[str, Any]]:
+    def parse_form4(self, accession_number: str, raw_xml_path: Path) -> list[dict[str, Any]]:
         """Parse Form 4 XML; lxml is the canonical path.
 
         Returns one dict per ``<nonDerivativeTransaction>`` with all spec
@@ -195,9 +180,7 @@ class EdgarProvider(FilingsProvider):
             )
             return []
 
-    def parse_13f(
-        self, accession_number: str, raw_path: Path
-    ) -> list[dict[str, Any]]:
+    def parse_13f(self, accession_number: str, raw_path: Path) -> list[dict[str, Any]]:
         """Parse 13F INFORMATION TABLE; lxml is the canonical path.
 
         Returns one dict per ``<infoTable>`` with ticker / shares / value /
@@ -218,33 +201,25 @@ class EdgarProvider(FilingsProvider):
 
     # ---------- Internal lxml parsers ----------
 
-    def _parse_form4_lxml(
-        self, accession_number: str, raw_xml_path: Path
-    ) -> list[dict[str, Any]]:
+    def _parse_form4_lxml(self, accession_number: str, raw_xml_path: Path) -> list[dict[str, Any]]:
         from lxml import etree
 
         tree = etree.parse(str(raw_xml_path))
         root = tree.getroot()
 
-        ticker = (
-            root.findtext(".//issuer/issuerTradingSymbol") or ""
-        ).strip().upper()
+        ticker = (root.findtext(".//issuer/issuerTradingSymbol") or "").strip().upper()
 
         # Reporting owner relationship (1st reporter; multi-reporter Form 4
         # is uncommon — v1 takes the first).
         owner = root.find(".//reportingOwner")
         if owner is not None:
-            insider_name = (
-                (owner.findtext(".//rptOwnerName") or "").strip()
-            )
+            insider_name = (owner.findtext(".//rptOwnerName") or "").strip()
             relationship = owner.find(".//reportingOwnerRelationship")
             if relationship is not None:
                 is_director = _flag(relationship, "isDirector")
                 is_officer = _flag(relationship, "isOfficer")
                 is_ten = _flag(relationship, "isTenPercentOwner")
-                insider_title = (
-                    relationship.findtext("officerTitle") or ""
-                ).strip()
+                insider_title = (relationship.findtext("officerTitle") or "").strip()
             else:
                 is_director = is_officer = is_ten = 0
                 insider_title = ""
@@ -257,9 +232,7 @@ class EdgarProvider(FilingsProvider):
         line_no = 0
         for tx in root.findall(".//nonDerivativeTransaction"):
             line_no += 1
-            code = (
-                tx.findtext(".//transactionCoding/transactionCode") or ""
-            ).strip().upper()
+            code = (tx.findtext(".//transactionCoding/transactionCode") or "").strip().upper()
             if code not in VALID_TRANSACTION_CODES:
                 log.warning(
                     "form4_unknown_transaction_code",
@@ -268,41 +241,19 @@ class EdgarProvider(FilingsProvider):
                     line_no=line_no,
                 )
                 continue
-            shares = _float(
-                tx.findtext(".//transactionAmounts/transactionShares/value")
-            )
-            price = _float(
-                tx.findtext(
-                    ".//transactionAmounts/transactionPricePerShare/value"
-                )
-            )
-            tx_date = (
-                tx.findtext(".//transactionDate/value") or ""
-            ).strip()
+            shares = _float(tx.findtext(".//transactionAmounts/transactionShares/value"))
+            price = _float(tx.findtext(".//transactionAmounts/transactionPricePerShare/value"))
+            tx_date = (tx.findtext(".//transactionDate/value") or "").strip()
             ad_code = (
-                tx.findtext(
-                    ".//transactionAmounts/transactionAcquiredDisposedCode/value"
-                )
-                or ""
-            ).strip().upper()
-            tx_type = (
-                "ACQUIRED"
-                if ad_code == "A"
-                else "DISPOSED"
-                if ad_code == "D"
-                else ""
+                (tx.findtext(".//transactionAmounts/transactionAcquiredDisposedCode/value") or "")
+                .strip()
+                .upper()
             )
+            tx_type = "ACQUIRED" if ad_code == "A" else "DISPOSED" if ad_code == "D" else ""
             ownership_type = (
-                tx.findtext(
-                    ".//ownershipNature/directOrIndirectOwnership/value"
-                )
-                or ""
+                tx.findtext(".//ownershipNature/directOrIndirectOwnership/value") or ""
             ).strip()
-            total_value = (
-                shares * price
-                if (shares is not None and price is not None)
-                else None
-            )
+            total_value = shares * price if (shares is not None and price is not None) else None
 
             results.append(
                 {
@@ -326,9 +277,7 @@ class EdgarProvider(FilingsProvider):
             )
         return results
 
-    def _parse_13f_lxml(
-        self, accession_number: str, raw_path: Path
-    ) -> list[dict[str, Any]]:
+    def _parse_13f_lxml(self, accession_number: str, raw_path: Path) -> list[dict[str, Any]]:
         from lxml import etree
 
         tree = etree.parse(str(raw_path))
@@ -336,9 +285,7 @@ class EdgarProvider(FilingsProvider):
 
         # 13F INFORMATION TABLE namespace (post-2013 schema). Older filings
         # may omit the namespace — fall back to namespaceless XPath.
-        ns = {
-            "n": "http://www.sec.gov/edgar/document/thirteenf/informationtable"
-        }
+        ns = {"n": "http://www.sec.gov/edgar/document/thirteenf/informationtable"}
         info_tables = root.findall(".//n:infoTable", namespaces=ns)
         if not info_tables:
             info_tables = root.findall(".//infoTable")
@@ -351,15 +298,11 @@ class EdgarProvider(FilingsProvider):
                 or _xpath_text(info, "nameOfIssuer", None)
                 or ""
             )
-            shares_text = _xpath_text(
-                info, "n:shrsOrPrnAmt/n:sshPrnamt", ns
-            ) or _xpath_text(info, "shrsOrPrnAmt/sshPrnamt", None)
-            value_text = _xpath_text(info, "n:value", ns) or _xpath_text(
-                info, "value", None
+            shares_text = _xpath_text(info, "n:shrsOrPrnAmt/n:sshPrnamt", ns) or _xpath_text(
+                info, "shrsOrPrnAmt/sshPrnamt", None
             )
-            cusip_text = _xpath_text(info, "n:cusip", ns) or _xpath_text(
-                info, "cusip", None
-            )
+            value_text = _xpath_text(info, "n:value", ns) or _xpath_text(info, "value", None)
+            cusip_text = _xpath_text(info, "n:cusip", ns) or _xpath_text(info, "cusip", None)
 
             results.append(
                 {
@@ -391,15 +334,13 @@ def _float(value: Any) -> float | None:
         return None
 
 
-def _xpath_text(
-    elem: Any, path: str, ns: dict[str, str] | None
-) -> str | None:
+def _xpath_text(elem: Any, path: str, ns: dict[str, str] | None) -> str | None:
     """findtext that tolerates None namespace map."""
     if elem is None:
         return None
     if ns:
-        return elem.findtext(path, namespaces=ns)
-    return elem.findtext(path)
+        return cast("str | None", elem.findtext(path, namespaces=ns))
+    return cast("str | None", elem.findtext(path))
 
 
-__all__ = ["CEO_CFO_TITLE_RE", "EdgarProvider", "VALID_TRANSACTION_CODES"]
+__all__ = ["CEO_CFO_TITLE_RE", "VALID_TRANSACTION_CODES", "EdgarProvider"]

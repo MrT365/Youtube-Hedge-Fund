@@ -49,7 +49,9 @@ def run_data(
 
 def run_scoring(
     ticker: str | None = typer.Option(None, "--ticker", help="(future) restrict to one ticker"),
-    sector: str | None = typer.Option(None, "--sector", help="(future) restrict to one GICS sector"),
+    sector: str | None = typer.Option(
+        None, "--sector", help="(future) restrict to one GICS sector"
+    ),
 ) -> None:
     """Stub — L2 factor scoring. Phase 2 fills."""
     typer.echo(f"run-scoring: {_NOT_YET} (Phase 2)")
@@ -57,7 +59,9 @@ def run_scoring(
 
 def run_analysis(
     ticker: str | None = typer.Option(None, "--ticker", help="(future) restrict to one ticker"),
-    sector: str | None = typer.Option(None, "--sector", help="(future) restrict to one GICS sector"),
+    sector: str | None = typer.Option(
+        None, "--sector", help="(future) restrict to one GICS sector"
+    ),
     estimate_cost: bool = typer.Option(
         False, "--estimate-cost", help="(future) preview Claude spend without sending"
     ),
@@ -76,9 +80,7 @@ def run_portfolio(
     dry_run: bool = typer.Option(False, "--dry-run", help="(future) skip writes"),
 ) -> None:
     """Stub — L4 portfolio construction. Phase 5 ships conviction; Phase 7 ships mvo."""
-    typer.echo(
-        f"run-portfolio: {_NOT_YET} (Phase 5/7) — optimize_method={optimize_method!r}"
-    )
+    typer.echo(f"run-portfolio: {_NOT_YET} (Phase 5/7) — optimize_method={optimize_method!r}")
 
 
 def run_execution(

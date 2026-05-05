@@ -41,9 +41,7 @@ def test_daily_refresh_stub_accepts_flags() -> None:
 
 
 def test_run_data_stub_accepts_flags() -> None:
-    result = runner.invoke(
-        app, ["run-data", "--no-filings", "--no-13f", "--ticker", "AAPL"]
-    )
+    result = runner.invoke(app, ["run-data", "--no-filings", "--no-13f", "--ticker", "AAPL"])
     assert result.exit_code == 0, f"stderr: {result.stderr}"
     assert "not implemented" in result.stdout
 
@@ -64,9 +62,7 @@ def test_run_analysis_stub_accepts_flags() -> None:
 
 
 def test_run_portfolio_stub_accepts_conviction() -> None:
-    result = runner.invoke(
-        app, ["run-portfolio", "--whatif", "--optimize-method", "conviction"]
-    )
+    result = runner.invoke(app, ["run-portfolio", "--whatif", "--optimize-method", "conviction"])
     assert result.exit_code == 0, f"stderr: {result.stderr}"
     # The stub echoes the optimize_method value back so we can assert flag wiring.
     assert "conviction" in result.stdout

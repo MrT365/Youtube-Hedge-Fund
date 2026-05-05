@@ -11,6 +11,7 @@ analytics that read ``insider_transactions``:
     by officers whose ``insider_title`` matches ``CEO_CFO_TITLE_RE``. These get
     a 3× weight in Phase 2 scoring per spec.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -95,15 +96,17 @@ def flag_ceo_cfo_purchases(
     for r in rows:
         title = r[2] or ""
         if CEO_CFO_TITLE_RE.search(title):
-            out.append({
-                "ticker": r[0],
-                "insider_name": r[1],
-                "insider_title": title,
-                "shares": r[3],
-                "price_per_share": r[4],
-                "total_value": r[5],
-                "transaction_date": r[6],
-            })
+            out.append(
+                {
+                    "ticker": r[0],
+                    "insider_name": r[1],
+                    "insider_title": title,
+                    "shares": r[3],
+                    "price_per_share": r[4],
+                    "total_value": r[5],
+                    "transaction_date": r[6],
+                }
+            )
     return out
 
 

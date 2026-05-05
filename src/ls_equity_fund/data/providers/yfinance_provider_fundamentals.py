@@ -10,6 +10,7 @@ D2 mitigation note: This module produces the per-period rows. The orchestrator
 UPDATE, never UPSERT. yfinance restating a value tomorrow → tomorrow's row
 appended; yesterday's value preserved. See PITFALLS.md D2 (CRITICAL).
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -54,13 +55,34 @@ _YF_LABEL_MAP: dict[str, str] = {
 }
 
 SCHEMA_COLS: list[str] = [
-    "revenue", "gross_profit", "operating_income", "net_income",
-    "eps_basic", "eps_diluted", "total_assets", "total_liabilities",
-    "total_equity", "current_assets", "current_liabilities",
-    "accounts_receivable", "inventory", "long_term_debt",
-    "cash_and_equivalents", "cfo", "cfi", "cff", "capex",
-    "free_cash_flow", "dividends_paid", "buybacks", "shares_outstanding",
-    "rd_expense", "ebit", "retained_earnings", "working_capital", "accruals",
+    "revenue",
+    "gross_profit",
+    "operating_income",
+    "net_income",
+    "eps_basic",
+    "eps_diluted",
+    "total_assets",
+    "total_liabilities",
+    "total_equity",
+    "current_assets",
+    "current_liabilities",
+    "accounts_receivable",
+    "inventory",
+    "long_term_debt",
+    "cash_and_equivalents",
+    "cfo",
+    "cfi",
+    "cff",
+    "capex",
+    "free_cash_flow",
+    "dividends_paid",
+    "buybacks",
+    "shares_outstanding",
+    "rd_expense",
+    "ebit",
+    "retained_earnings",
+    "working_capital",
+    "accruals",
 ]
 
 
@@ -106,7 +128,7 @@ def get_fundamentals_impl(session: Any, ticker: str) -> pd.DataFrame:
                 for period_end, value in series.items():
                     # NaN check — float('nan') != float('nan')
                     try:
-                        if value != value:  # noqa: PLR0124 — NaN check
+                        if value != value:
                             continue
                     except TypeError:
                         continue

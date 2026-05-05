@@ -10,6 +10,7 @@ date) and ``filed_date`` (when the SEC published it) MUST be preserved so
 downstream factor logic in Phase 2 can compute alpha-decay weighting based
 on ``today - period_end``. Never collapse the two.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -50,11 +51,15 @@ def refresh_institutional_holdings(
             try:
                 # 13F-HR is the spec form name (some funds also file 13F-HR/A).
                 fund_filings = provider.fetch_filings(
-                    fund.cik, ["13F-HR"], since=None, cache_dir=cache_dir,
+                    fund.cik,
+                    ["13F-HR"],
+                    since=None,
+                    cache_dir=cache_dir,
                 )
                 for ff in fund_filings:
                     positions = provider.parse_13f(
-                        ff["accession_number"], Path(ff["filepath"]),
+                        ff["accession_number"],
+                        Path(ff["filepath"]),
                     )
                     period_end = ff.get("period_of_report") or ""
                     filed_date = ff.get("filed_date") or ""
@@ -70,9 +75,7 @@ def refresh_institutional_holdings(
                             (fund.cik, ticker, period_end),
                         ).fetchone()
                         prior_shares = (
-                            float(prior[0])
-                            if prior is not None and prior[0] is not None
-                            else 0.0
+                            float(prior[0]) if prior is not None and prior[0] is not None else 0.0
                         )
                         cur_shares = float(pos.get("shares") or 0.0)
                         change_shares = cur_shares - prior_shares
@@ -83,15 +86,20 @@ def refresh_institutional_holdings(
                                 shares, value_usd, change_shares, is_new_position)
                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                             (
-                                fund.cik, fund.name, ticker,
-                                period_end, filed_date,
-                                cur_shares, pos.get("value_usd"),
-                                change_shares, is_new,
+                                fund.cik,
+                                fund.name,
+                                ticker,
+                                period_end,
+                                filed_date,
+                                cur_shares,
+                                pos.get("value_usd"),
+                                change_shares,
+                                is_new,
                             ),
                         )
                         rows_written += 1
                 ok += 1
-            except Exception as e:  # noqa: BLE001 — log+continue per data layer pattern
+            except Exception as e:
                 log.error("13f_fetch_failed", fund=fund.name, error=str(e))
                 failed += 1
 
@@ -125,10 +133,7 @@ def detect_multi_fund_openings(
            ORDER BY new_funds DESC""",
         (period_end, min_funds),
     ).fetchall()
-    return [
-        {"ticker": r[0], "new_funds": r[1], "fund_names": r[2]}
-        for r in rows
-    ]
+    return [{"ticker": r[0], "new_funds": r[1], "fund_names": r[2]} for r in rows]
 
 
 __all__ = ["detect_multi_fund_openings", "refresh_institutional_holdings"]

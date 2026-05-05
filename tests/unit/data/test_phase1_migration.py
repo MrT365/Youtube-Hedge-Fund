@@ -11,6 +11,7 @@ and asserts the schema invariants this plan binds:
   - fundamentals.as_of_ingest_date is part of the primary key (D2 mitigation).
   - downgrade rolls back to the Phase 0 baseline (only runs / heartbeat / alembic_version).
 """
+
 from __future__ import annotations
 
 import sqlite3

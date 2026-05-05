@@ -13,6 +13,7 @@ The 30/60/90-day estimate-revisions factor (Phase 2) reconstructs revisions
 from the historical snapshot rows here — that is why this module is daily,
 append-only, with snapshot_date in the PK.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -66,29 +67,21 @@ def refresh_short_interest(
             tickers = [
                 r[0]
                 for r in conn.execute(
-                    "SELECT ticker FROM universe "
-                    "WHERE delisted_date IS NULL ORDER BY ticker"
+                    "SELECT ticker FROM universe WHERE delisted_date IS NULL ORDER BY ticker"
                 )
             ]
         if provider is None:
             provider = YFinanceProvider(db_path=get_db_path(config))
 
         ok = failed = rows_written = 0
-        with ThreadPoolExecutor(
-            max_workers=config.data.yfinance_max_workers
-        ) as pool:
-            futures = {
-                pool.submit(provider.get_short_interest, t, today): t
-                for t in tickers
-            }
+        with ThreadPoolExecutor(max_workers=config.data.yfinance_max_workers) as pool:
+            futures = {pool.submit(provider.get_short_interest, t, today): t for t in tickers}
             for fut in as_completed(futures):
                 ticker = futures[fut]
                 try:
                     snapshot = fut.result()
                     if snapshot is None:
-                        _persist_state(
-                            conn, ticker, today_str, "SKIPPED", "no data"
-                        )
+                        _persist_state(conn, ticker, today_str, "SKIPPED", "no data")
                         continue
                     conn.execute(
                         """INSERT OR IGNORE INTO short_interest
@@ -107,12 +100,8 @@ def refresh_short_interest(
                     _persist_state(conn, ticker, today_str, "OK", None)
                     ok += 1
                 except YFinanceError as e:
-                    log.error(
-                        "short_interest_failed", ticker=ticker, error=str(e)
-                    )
-                    _persist_state(
-                        conn, ticker, None, "FAILED", str(e)[:500]
-                    )
+                    log.error("short_interest_failed", ticker=ticker, error=str(e))
+                    _persist_state(conn, ticker, None, "FAILED", str(e)[:500])
                     failed += 1
                 except Exception as e:
                     log.error(
@@ -120,9 +109,7 @@ def refresh_short_interest(
                         ticker=ticker,
                         error=str(e),
                     )
-                    _persist_state(
-                        conn, ticker, None, "FAILED", str(e)[:500]
-                    )
+                    _persist_state(conn, ticker, None, "FAILED", str(e)[:500])
                     failed += 1
 
         result = {"ok": ok, "failed": failed, "rows_written": rows_written}

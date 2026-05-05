@@ -20,9 +20,9 @@ Per Plan 01-04 plan-level decision (curl_cffi mandatory): no
 ``requests-cache`` — broken with the curl_cffi transport (CLAUDE.md
 anti-recommendation).
 """
+
 from __future__ import annotations
 
-import sqlite3
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -92,9 +92,7 @@ class YFinanceProvider(
 
     # ---------- OHLCVProvider ----------
 
-    def get_prices(
-        self, tickers: list[str], start: date, end: date
-    ) -> pd.DataFrame:
+    def get_prices(self, tickers: list[str], start: date, end: date) -> pd.DataFrame:
         """Fetch OHLCV for tickers between start and end (inclusive).
 
         Returns:
@@ -108,16 +106,12 @@ class YFinanceProvider(
         try:
             return self._download_with_retry(tickers, start, end)
         except RetryError as e:
-            raise YFinanceError(
-                f"yfinance download failed for {tickers}: {e}"
-            ) from e
+            raise YFinanceError(f"yfinance download failed for {tickers}: {e}") from e
         except Exception as e:
             # `reraise=True` on @retry causes the underlying exception to bubble
             # up directly (instead of RetryError); wrap it consistently so the
             # orchestrator only needs to catch YFinanceError.
-            raise YFinanceError(
-                f"yfinance download failed for {tickers}: {e}"
-            ) from e
+            raise YFinanceError(f"yfinance download failed for {tickers}: {e}") from e
 
     @retry(
         stop=stop_after_attempt(3),
@@ -125,9 +119,7 @@ class YFinanceProvider(
         retry=retry_if_exception_type(Exception),
         reraise=True,
     )
-    def _download_with_retry(
-        self, tickers: list[str], start: date, end: date
-    ) -> pd.DataFrame:
+    def _download_with_retry(self, tickers: list[str], start: date, end: date) -> pd.DataFrame:
         # yf.download accepts list[str]; for single ticker, pass as ["AAPL"].
         # group_by="ticker" returns a hierarchical column index that we flatten
         # via _normalize_to_panel into MultiIndex(['ticker', 'date']).
@@ -146,9 +138,7 @@ class YFinanceProvider(
         return self._normalize_to_panel(df, tickers)
 
     @staticmethod
-    def _normalize_to_panel(
-        df: pd.DataFrame, tickers: list[str]
-    ) -> pd.DataFrame:
+    def _normalize_to_panel(df: pd.DataFrame, tickers: list[str]) -> pd.DataFrame:
         """Coerce yfinance output into MultiIndex(['ticker','date']) panel.
 
         yfinance returns either:
@@ -178,9 +168,7 @@ class YFinanceProvider(
         if not rows:
             # Should be unreachable — caller checks df.empty first — but keep a
             # defensive empty panel with the canonical schema.
-            return pd.DataFrame(
-                columns=["open", "high", "low", "close", "adj_close", "volume"]
-            )
+            return pd.DataFrame(columns=["open", "high", "low", "close", "adj_close", "volume"])
         out = pd.concat(rows).sort_index()
         # yfinance emits "Adj Close" → after lower+_-replace it becomes "adj_close".
         # Defensive rename in case of "adj close" residue (older yfinance shapes).
@@ -213,20 +201,14 @@ class YFinanceProvider(
 
     # ---------- FundamentalsProvider (filled by Plan 01-05) ----------
     def get_fundamentals(self, ticker: str) -> pd.DataFrame:
-        raise NotImplementedError(
-            "Filled by Plan 01-05 (fundamentals + ratios)"
-        )
+        raise NotImplementedError("Filled by Plan 01-05 (fundamentals + ratios)")
 
     # ---------- ShortInterestProvider (filled by Plan 01-07) ----------
-    def get_short_interest(
-        self, ticker: str, asof: date
-    ) -> dict[str, Any] | None:
+    def get_short_interest(self, ticker: str, asof: date) -> dict[str, Any] | None:
         raise NotImplementedError("Filled by Plan 01-07 (short interest)")
 
     # ---------- EstimatesProvider (filled by Plan 01-07) ----------
-    def get_estimates(
-        self, ticker: str, asof: date
-    ) -> dict[str, Any] | None:
+    def get_estimates(self, ticker: str, asof: date) -> dict[str, Any] | None:
         raise NotImplementedError("Filled by Plan 01-07 (analyst estimates)")
 
     def get_next_earnings_dates(

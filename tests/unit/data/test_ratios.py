@@ -4,6 +4,7 @@ Math is exercised against an integer-valued synthetic fixture so floating-point
 slop does not mask wrong formulas. The 24-name + count test pins the spec
 contract directly.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -42,22 +43,127 @@ def populated_db(tmp_path: Path):
     #         buybacks, working_capital, rd_expense, operating_income)
     quarters = [
         # q0 — latest, integer-friendly numbers for math verification
-        ("2026-03-31", 100.0, 20.0, 25.0, 1000.0, 500.0, 200.0, 50.0, 30.0,
-         40.0, 100.0, 250.0, 600.0, 100.0, 15.0, 30.0, -5.0, -3.0, -2.0,
-         150.0, 8.0, 25.0),
-        ("2025-12-31", 95.0, 18.0, 22.0, 980.0, 490.0, 195.0, 50.0, 28.0,
-         38.0, 100.0, 245.0, 590.0, 100.0, 14.0, 28.0, -4.0, -2.5, -1.5,
-         145.0, 7.5, 23.0),
-        ("2025-09-30", 92.0, 17.0, 21.0, 970.0, 480.0, 190.0, 50.0, 26.0,
-         37.0, 100.0, 240.0, 585.0, 100.0, 14.0, 26.0, -4.0, -2.0, -1.0,
-         140.0, 7.0, 22.0),
-        ("2025-06-30", 90.0, 16.0, 20.0, 960.0, 470.0, 185.0, 50.0, 24.0,
-         36.0, 100.0, 235.0, 580.0, 100.0, 14.0, 24.0, -4.0, -1.5, -1.0,
-         135.0, 7.0, 21.0),
+        (
+            "2026-03-31",
+            100.0,
+            20.0,
+            25.0,
+            1000.0,
+            500.0,
+            200.0,
+            50.0,
+            30.0,
+            40.0,
+            100.0,
+            250.0,
+            600.0,
+            100.0,
+            15.0,
+            30.0,
+            -5.0,
+            -3.0,
+            -2.0,
+            150.0,
+            8.0,
+            25.0,
+        ),
+        (
+            "2025-12-31",
+            95.0,
+            18.0,
+            22.0,
+            980.0,
+            490.0,
+            195.0,
+            50.0,
+            28.0,
+            38.0,
+            100.0,
+            245.0,
+            590.0,
+            100.0,
+            14.0,
+            28.0,
+            -4.0,
+            -2.5,
+            -1.5,
+            145.0,
+            7.5,
+            23.0,
+        ),
+        (
+            "2025-09-30",
+            92.0,
+            17.0,
+            21.0,
+            970.0,
+            480.0,
+            190.0,
+            50.0,
+            26.0,
+            37.0,
+            100.0,
+            240.0,
+            585.0,
+            100.0,
+            14.0,
+            26.0,
+            -4.0,
+            -2.0,
+            -1.0,
+            140.0,
+            7.0,
+            22.0,
+        ),
+        (
+            "2025-06-30",
+            90.0,
+            16.0,
+            20.0,
+            960.0,
+            470.0,
+            185.0,
+            50.0,
+            24.0,
+            36.0,
+            100.0,
+            235.0,
+            580.0,
+            100.0,
+            14.0,
+            24.0,
+            -4.0,
+            -1.5,
+            -1.0,
+            135.0,
+            7.0,
+            21.0,
+        ),
         # q4 — year-ago for YoY math: rev=88, ni=14
-        ("2025-03-31", 88.0, 14.0, 18.0, 950.0, 460.0, 180.0, 50.0, 22.0,
-         35.0, 100.0, 230.0, 575.0, 100.0, 14.0, 22.0, -4.0, -1.0, -0.5,
-         130.0, 6.5, 20.0),
+        (
+            "2025-03-31",
+            88.0,
+            14.0,
+            18.0,
+            950.0,
+            460.0,
+            180.0,
+            50.0,
+            22.0,
+            35.0,
+            100.0,
+            230.0,
+            575.0,
+            100.0,
+            14.0,
+            22.0,
+            -4.0,
+            -1.0,
+            -0.5,
+            130.0,
+            6.5,
+            20.0,
+        ),
     ]
     for q in quarters:
         conn.execute(
@@ -74,8 +180,7 @@ def populated_db(tmp_path: Path):
         )
     # Latest close for market_cap — close=150, shares=100 → mcap=15000
     conn.execute(
-        "INSERT INTO daily_prices (ticker, date, close) "
-        "VALUES ('AAPL', '2026-04-01', 150.0)"
+        "INSERT INTO daily_prices (ticker, date, close) VALUES ('AAPL', '2026-04-01', 150.0)"
     )
     conn.commit()
     yield conn
@@ -199,8 +304,7 @@ def test_compute_all_ratios_idempotent_via_replace(populated_db) -> None:
     compute_all_ratios(populated_db, date(2026, 4, 1))
     compute_all_ratios(populated_db, date(2026, 4, 1))  # second run
     n = populated_db.execute(
-        "SELECT COUNT(*) FROM fundamental_ratios "
-        "WHERE ticker='AAPL' AND asof_date='2026-04-01'"
+        "SELECT COUNT(*) FROM fundamental_ratios WHERE ticker='AAPL' AND asof_date='2026-04-01'"
     ).fetchone()[0]
     assert n == 1  # not 2
 

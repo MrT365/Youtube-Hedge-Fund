@@ -38,6 +38,7 @@ All values are floats or None. None means inputs were missing or zero
 denominator (the ``_safe_div`` guard returns None on div-by-zero rather than
 ``inf`` / ``nan`` so downstream factor code can branch cleanly).
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -71,14 +72,30 @@ def _safe_div(num: Any, den: Any) -> float | None:
 
 # Output column order for the fundamental_ratios table — matches migration 0002.
 _OUTPUT_COLS: list[str] = [
-    "roe", "roa", "gross_margin", "operating_margin", "net_margin",
-    "revenue_growth_yoy", "revenue_growth_qoq",
-    "earnings_growth_yoy", "earnings_growth_qoq",
-    "debt_to_equity", "fcf_yield", "current_ratio", "ar_to_revenue",
-    "cfo_to_ni", "accruals_ratio", "retained_earnings_ratio",
-    "working_capital_ratio", "total_liabilities_ratio",
-    "ebit_margin", "rd_intensity", "shares_out",
-    "dividend_yield", "buyback_yield", "asset_turnover",
+    "roe",
+    "roa",
+    "gross_margin",
+    "operating_margin",
+    "net_margin",
+    "revenue_growth_yoy",
+    "revenue_growth_qoq",
+    "earnings_growth_yoy",
+    "earnings_growth_qoq",
+    "debt_to_equity",
+    "fcf_yield",
+    "current_ratio",
+    "ar_to_revenue",
+    "cfo_to_ni",
+    "accruals_ratio",
+    "retained_earnings_ratio",
+    "working_capital_ratio",
+    "total_liabilities_ratio",
+    "ebit_margin",
+    "rd_intensity",
+    "shares_out",
+    "dividend_yield",
+    "buyback_yield",
+    "asset_turnover",
 ]
 
 
@@ -118,12 +135,10 @@ def _latest_per_period(
     """
     cur = conn.execute(sql, (ticker, period_type, asof_str, asof_str, limit))
     cols = [d[0] for d in cur.description]
-    return [dict(zip(cols, row)) for row in cur.fetchall()]
+    return [dict(zip(cols, row, strict=False)) for row in cur.fetchall()]
 
 
-def compute_ratios(
-    ticker: str, asof: date, conn: sqlite3.Connection
-) -> dict[str, float | None]:
+def compute_ratios(ticker: str, asof: date, conn: sqlite3.Connection) -> dict[str, float | None]:
     """Return the 24 ratios for ``ticker`` as of ``asof``.
 
     Reads:
@@ -144,8 +159,7 @@ def compute_ratios(
 
     # Latest close on or before asof
     close_row = conn.execute(
-        "SELECT close FROM daily_prices WHERE ticker=? AND date <= ? "
-        "ORDER BY date DESC LIMIT 1",
+        "SELECT close FROM daily_prices WHERE ticker=? AND date <= ? ORDER BY date DESC LIMIT 1",
         (ticker, asof_str),
     ).fetchone()
     close = close_row[0] if close_row else None
@@ -210,9 +224,7 @@ def compute_ratios(
         "retained_earnings_ratio": _safe_div(
             base.get("retained_earnings"), base.get("total_assets")
         ),
-        "working_capital_ratio": _safe_div(
-            base.get("working_capital"), base.get("total_assets")
-        ),
+        "working_capital_ratio": _safe_div(base.get("working_capital"), base.get("total_assets")),
         "total_liabilities_ratio": _safe_div(
             base.get("total_liabilities"), base.get("total_assets")
         ),
@@ -246,7 +258,8 @@ def compute_all_ratios(conn: sqlite3.Connection, asof: date) -> int:
     """
     asof_str = asof.isoformat()
     tickers = [
-        r[0] for r in conn.execute(
+        r[0]
+        for r in conn.execute(
             "SELECT ticker FROM universe WHERE delisted_date IS NULL ORDER BY ticker"
         )
     ]

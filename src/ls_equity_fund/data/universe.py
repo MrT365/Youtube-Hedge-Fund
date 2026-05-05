@@ -104,9 +104,7 @@ def merge_universe_pit(
     # Pre-fetch existing rows in one query (avoids N+1).
     existing = {
         row[0]: {"first_seen_date": row[1], "delisted_date": row[2]}
-        for row in conn.execute(
-            "SELECT ticker, first_seen_date, delisted_date FROM universe"
-        )
+        for row in conn.execute("SELECT ticker, first_seen_date, delisted_date FROM universe")
     }
 
     conn.execute("BEGIN")
@@ -251,18 +249,14 @@ def _build_sp500(*, fixture_html_path: Path | None = None) -> list[dict[str, Any
     return out
 
 
-def _build_liquid_us(
-    config: Config, conn: sqlite3.Connection
-) -> list[dict[str, Any]]:
+def _build_liquid_us(config: Config, conn: sqlite3.Connection) -> list[dict[str, Any]]:
     """Filtered scanner over daily_prices + yfinance metadata.
 
     Falls back to scanner_seed if daily_prices is empty (Phase 1 first-run
     case — Plan 04 ships OHLCV; the orchestrator sequences 04 before 02 in
     Wave 2 but a clean first run on a fresh DB still hits this branch).
     """
-    threshold_cnt = conn.execute(
-        "SELECT COUNT(DISTINCT ticker) FROM daily_prices"
-    ).fetchone()[0]
+    threshold_cnt = conn.execute("SELECT COUNT(DISTINCT ticker) FROM daily_prices").fetchone()[0]
     if threshold_cnt == 0:
         log.warning(
             "liquid_us_falls_back_to_seed",
@@ -324,17 +318,13 @@ def _enrich_with_yfinance(
     for t in tickers:
         try:
             info = yf.Ticker(t).info or {}
-        except Exception as e:  # noqa: BLE001 — yfinance throws assorted exceptions
+        except Exception as e:
             log.warning("yfinance_info_failed", ticker=t, error=str(e))
             info = {}
 
         market_cap = float(info.get("marketCap") or 0)
         exchange = str(info.get("exchange") or "")
-        if (
-            allowed_exchanges is not None
-            and exchange
-            and exchange not in allowed_exchanges
-        ):
+        if allowed_exchanges is not None and exchange and exchange not in allowed_exchanges:
             continue
         if market_cap < min_market_cap:
             continue

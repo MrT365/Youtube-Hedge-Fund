@@ -11,6 +11,7 @@ Six unit tests cover:
 The fixture migrates a fresh tmp SQLite via Alembic so the `benchmarks` table
 shape matches migration 0002 exactly.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -22,7 +23,6 @@ from alembic.config import Config as AlembicConfig
 
 from ls_equity_fund.config import load_config
 from ls_equity_fund.data.benchmarks import refresh_benchmarks
-
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -54,17 +54,11 @@ def test_refresh_writes_18_rows(migrated_conn, config) -> None:
 
 def test_refresh_categorizes_correctly(migrated_conn, config) -> None:
     refresh_benchmarks(config, conn=migrated_conn)
-    spy = migrated_conn.execute(
-        "SELECT category FROM benchmarks WHERE ticker='SPY'"
-    ).fetchone()
+    spy = migrated_conn.execute("SELECT category FROM benchmarks WHERE ticker='SPY'").fetchone()
     assert spy["category"] == "benchmark"
-    xlk = migrated_conn.execute(
-        "SELECT category FROM benchmarks WHERE ticker='XLK'"
-    ).fetchone()
+    xlk = migrated_conn.execute("SELECT category FROM benchmarks WHERE ticker='XLK'").fetchone()
     assert xlk["category"] == "sector_etf"
-    vix = migrated_conn.execute(
-        "SELECT category FROM benchmarks WHERE ticker='^VIX'"
-    ).fetchone()
+    vix = migrated_conn.execute("SELECT category FROM benchmarks WHERE ticker='^VIX'").fetchone()
     assert vix["category"] == "macro"
 
 
@@ -82,17 +76,24 @@ def test_refresh_includes_all_11_sector_etfs(migrated_conn, config) -> None:
     ).fetchall()
     sectors = {r["ticker"] for r in rows}
     assert sectors == {
-        "XLK", "XLF", "XLV", "XLE", "XLI", "XLC",
-        "XLY", "XLP", "XLB", "XLRE", "XLU",
+        "XLK",
+        "XLF",
+        "XLV",
+        "XLE",
+        "XLI",
+        "XLC",
+        "XLY",
+        "XLP",
+        "XLB",
+        "XLRE",
+        "XLU",
     }
 
 
 def test_refresh_handles_custom_ticker_without_description(migrated_conn, config) -> None:
-    config.data.sector_etfs = config.data.sector_etfs + ["SMH"]  # add semis ETF
+    config.data.sector_etfs = [*config.data.sector_etfs, "SMH"]  # add semis ETF
     refresh_benchmarks(config, conn=migrated_conn)
-    smh = migrated_conn.execute(
-        "SELECT description FROM benchmarks WHERE ticker='SMH'"
-    ).fetchone()
+    smh = migrated_conn.execute("SELECT description FROM benchmarks WHERE ticker='SMH'").fetchone()
     assert smh["description"] == ""  # unknown tickers get empty description, no crash
 
 

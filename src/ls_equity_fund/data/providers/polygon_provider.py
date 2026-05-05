@@ -13,6 +13,7 @@ in production, supply OHLCV / Fundamentals / ShortInterest / Estimates feeds
 from the union here is what proves the seam works — adding a real
 implementation is a separate v1.x plan.
 """
+
 from __future__ import annotations
 
 from datetime import date
@@ -55,9 +56,7 @@ class PolygonProvider(
         self.api_key = api_key
 
     # ---------- OHLCVProvider ----------
-    def get_prices(
-        self, tickers: list[str], start: date, end: date
-    ) -> pd.DataFrame:
+    def get_prices(self, tickers: list[str], start: date, end: date) -> pd.DataFrame:
         raise NotImplementedError(_POLYGON_DEFERRED)
 
     def get_last_stored_date(self, ticker: str) -> date | None:
@@ -68,15 +67,11 @@ class PolygonProvider(
         raise NotImplementedError(_POLYGON_DEFERRED)
 
     # ---------- ShortInterestProvider ----------
-    def get_short_interest(
-        self, ticker: str, asof: date
-    ) -> dict[str, Any] | None:
+    def get_short_interest(self, ticker: str, asof: date) -> dict[str, Any] | None:
         raise NotImplementedError(_POLYGON_DEFERRED)
 
     # ---------- EstimatesProvider ----------
-    def get_estimates(
-        self, ticker: str, asof: date
-    ) -> dict[str, Any] | None:
+    def get_estimates(self, ticker: str, asof: date) -> dict[str, Any] | None:
         raise NotImplementedError(_POLYGON_DEFERRED)
 
     def get_next_earnings_dates(
@@ -94,20 +89,14 @@ class PolygonProvider(
     ) -> list[dict[str, Any]]:
         raise NotImplementedError(_POLYGON_DEFERRED)
 
-    def parse_form4(
-        self, accession_number: str, raw_xml_path: Path
-    ) -> list[dict[str, Any]]:
+    def parse_form4(self, accession_number: str, raw_xml_path: Path) -> list[dict[str, Any]]:
         raise NotImplementedError(_POLYGON_DEFERRED)
 
-    def parse_13f(
-        self, accession_number: str, raw_path: Path
-    ) -> list[dict[str, Any]]:
+    def parse_13f(self, accession_number: str, raw_path: Path) -> list[dict[str, Any]]:
         raise NotImplementedError(_POLYGON_DEFERRED)
 
     # ---------- MacroProvider ----------
-    def fetch_macro_events(
-        self, lookahead_days: int = 365
-    ) -> list[dict[str, Any]]:
+    def fetch_macro_events(self, lookahead_days: int = 365) -> list[dict[str, Any]]:
         raise NotImplementedError(_POLYGON_DEFERRED)
 
 

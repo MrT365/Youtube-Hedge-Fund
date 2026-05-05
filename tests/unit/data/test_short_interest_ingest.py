@@ -11,6 +11,7 @@ short-interest daily snapshot (DATA-08):
 
 All tests use a MagicMock-shaped fake provider — yfinance is never called.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -81,7 +82,10 @@ def test_refresh_writes_one_row_per_ticker_today(setup) -> None:
         "short_percent_of_float": 0.05,
     }
     result = refresh_short_interest(
-        config_obj, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config_obj,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     assert result["ok"] == 1
     assert result["failed"] == 0
@@ -94,8 +98,7 @@ def test_refresh_writes_one_row_per_ticker_today(setup) -> None:
     assert row == (10_000_000.0, 1.5, 0.05)
 
     rs = conn.execute(
-        "SELECT status FROM refresh_state "
-        "WHERE ticker='AAPL' AND feed_type='short_interest'"
+        "SELECT status FROM refresh_state WHERE ticker='AAPL' AND feed_type='short_interest'"
     ).fetchone()
     assert rs[0] == "OK"
 
@@ -110,10 +113,16 @@ def test_idempotent_same_day(setup) -> None:
         "short_percent_of_float": 0.01,
     }
     refresh_short_interest(
-        config_obj, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config_obj,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     refresh_short_interest(
-        config_obj, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config_obj,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     n = conn.execute("SELECT COUNT(*) FROM short_interest").fetchone()[0]
     assert n == 1
@@ -126,7 +135,10 @@ def test_skipped_when_provider_returns_none(setup) -> None:
     fake.get_short_interest.return_value = None
 
     result = refresh_short_interest(
-        config_obj, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config_obj,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     assert result["rows_written"] == 0
 
@@ -145,7 +157,10 @@ def test_log_continue_on_yfinance_error(setup) -> None:
     fake.get_short_interest.side_effect = YFinanceError("rate limit hit")
 
     result = refresh_short_interest(
-        config_obj, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config_obj,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     assert result["failed"] == 1
     assert result["rows_written"] == 0

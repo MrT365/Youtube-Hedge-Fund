@@ -8,6 +8,7 @@ Per PITFALLS.md D6: yfinance earnings dates are noisy (timezone shifts,
 dropped dates). This impl records what yfinance reports; downstream
 earnings-blackout (Phase 5) applies a 5-day buffer to absorb noise.
 """
+
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
@@ -24,9 +25,7 @@ log = structlog.get_logger(__name__)
     wait=wait_exponential(multiplier=1, min=1, max=8),
     reraise=True,
 )
-def get_short_interest_impl(
-    session: Any, ticker: str, asof: date
-) -> dict[str, Any] | None:
+def get_short_interest_impl(session: Any, ticker: str, asof: date) -> dict[str, Any] | None:
     """yfinance Ticker.info short fields.
 
     Returns None when the upstream `info` dict is empty/unavailable.
@@ -49,9 +48,7 @@ def get_short_interest_impl(
     wait=wait_exponential(multiplier=1, min=1, max=8),
     reraise=True,
 )
-def get_estimates_impl(
-    session: Any, ticker: str, asof: date
-) -> dict[str, Any] | None:
+def get_estimates_impl(session: Any, ticker: str, asof: date) -> dict[str, Any] | None:
     """yfinance analyst targets + earnings/revenue estimates.
 
     Defensive: each attribute is read inside a try/except so a single

@@ -57,8 +57,7 @@ def test_merge_inserts_new_tickers_with_first_seen_date(migrated_conn) -> None:
     stats = merge_universe_pit(rows, migrated_conn, today=date(2026, 1, 15))
     assert stats == {"inserted": 1, "updated": 0, "delisted": 0, "reincluded": 0}
     row = migrated_conn.execute(
-        "SELECT first_seen_date, delisted_date, inclusion_window "
-        "FROM universe WHERE ticker='AAPL'"
+        "SELECT first_seen_date, delisted_date, inclusion_window FROM universe WHERE ticker='AAPL'"
     ).fetchone()
     assert row["first_seen_date"] == "2026-01-15"
     assert row["delisted_date"] is None
@@ -96,8 +95,7 @@ def test_merge_flags_delisted_does_not_delete(migrated_conn) -> None:
     assert stats["updated"] == 2
 
     enrn = migrated_conn.execute(
-        "SELECT first_seen_date, delisted_date, inclusion_window "
-        "FROM universe WHERE ticker='ENRN'"
+        "SELECT first_seen_date, delisted_date, inclusion_window FROM universe WHERE ticker='ENRN'"
     ).fetchone()
     assert enrn is not None, "delisted ticker must NOT be deleted (CP1)"
     assert enrn["first_seen_date"] == "2026-01-01"
@@ -145,8 +143,7 @@ def test_reincluded_ticker_keeps_original_first_seen(migrated_conn) -> None:
     stats = merge_universe_pit(rows, migrated_conn, today=date(2026, 6, 1))
     assert stats["reincluded"] == 1
     row = migrated_conn.execute(
-        "SELECT first_seen_date, delisted_date, inclusion_window "
-        "FROM universe WHERE ticker='T'"
+        "SELECT first_seen_date, delisted_date, inclusion_window FROM universe WHERE ticker='T'"
     ).fetchone()
     assert row["first_seen_date"] == "2026-01-01"  # ORIGINAL preserved
     assert row["delisted_date"] is None  # cleared

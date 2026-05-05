@@ -47,8 +47,8 @@ from ls_equity_fund.data.universe import build_universe, merge_universe_pit
 
 __all__ = [
     "DEFAULT_FORMS",
-    "EstimatesProvider",
     "FORM4_LOOKBACK_DAYS",
+    "EstimatesProvider",
     "FilingsProvider",
     "FundamentalsProvider",
     "MacroProvider",
@@ -71,7 +71,7 @@ __all__ = [
     "refresh_filings",
     "refresh_fundamentals",
     "refresh_institutional_holdings",
-    "refresh_prices",
     "refresh_macro_calendar",
+    "refresh_prices",
     "refresh_short_interest",
 ]

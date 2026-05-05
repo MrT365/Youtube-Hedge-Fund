@@ -9,6 +9,7 @@ The Phase 0 monolithic ``MarketDataProvider`` ABC at
 ``src/ls_equity_fund/data/base.py`` is RETAINED for backward compatibility
 with INFRA-03; these siblings are additive.
 """
+
 from __future__ import annotations
 
 from ls_equity_fund.data.providers.base import (

@@ -87,8 +87,7 @@ def test_doctor_creates_runs_and_heartbeat_tables(fresh_workspace: Path) -> None
     conn = sqlite3.connect(str(db_path))
     try:
         tables = {
-            row[0]
-            for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
         }
     finally:
         conn.close()
@@ -126,9 +125,7 @@ def test_doctor_is_idempotent(fresh_workspace: Path) -> None:
     assert len(versions) == 1, f"alembic_version row count={len(versions)}, expected 1"
 
 
-def test_doctor_missing_config_yaml(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_doctor_missing_config_yaml(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Exit code 2 with helpful message pointing at config.yaml.example."""
     monkeypatch.chdir(tmp_path)  # no config.yaml here
     result = runner.invoke(app, ["doctor"])
@@ -152,17 +149,14 @@ def test_doctor_missing_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> 
     assert "does NOT initialize" in result.stderr
 
 
-def test_doctor_malformed_config_yaml(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_doctor_malformed_config_yaml(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Exit code 4 when pydantic config validation fails."""
     yaml_text = (REPO_ROOT / "config.yaml.example").read_text()
     # Inject a type error: paper_port should be int.
     yaml_text = yaml_text.replace("paper_port: 7497", "paper_port: not_an_int")
     (tmp_path / "config.yaml").write_text(yaml_text)
     (tmp_path / ".env").write_text(
-        "ANTHROPIC_API_KEY=sk-ant-test\n"
-        "SEC_USER_AGENT=Meridian test@example.com\n"
+        "ANTHROPIC_API_KEY=sk-ant-test\nSEC_USER_AGENT=Meridian test@example.com\n"
     )
     monkeypatch.chdir(tmp_path)
     result = runner.invoke(app, ["doctor"])

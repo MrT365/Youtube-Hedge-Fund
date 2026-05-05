@@ -15,7 +15,7 @@ Per CONTEXT D-15: validation fires at ``load_config()`` — bad config raises
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, Field
@@ -56,7 +56,7 @@ class TrackedFund(BaseModel):
     name: str
     cik: str
 
-    def __init__(self, **data):  # type: ignore[no-untyped-def]
+    def __init__(self, **data: Any) -> None:
         # Auto zero-pad CIKs to 10 digits per EDGAR convention.
         cik = data.get("cik", "")
         if isinstance(cik, str) and cik.isdigit():
@@ -83,43 +83,88 @@ class DataConfig(BaseModel):
         # the eleven sector ETFs). [Rule 1 deviation in 01-02 SUMMARY.md]
         default_factory=lambda: [
             # XLK (Information Technology)
-            "AAPL", "MSFT", "NVDA", "AVGO", "ORCL",
+            "AAPL",
+            "MSFT",
+            "NVDA",
+            "AVGO",
+            "ORCL",
             # XLF (Financials)
-            "JPM", "BAC", "WFC", "GS", "MS",
+            "JPM",
+            "BAC",
+            "WFC",
+            "GS",
+            "MS",
             # XLV (Health Care)
-            "UNH", "JNJ", "LLY", "ABBV", "PFE",
+            "UNH",
+            "JNJ",
+            "LLY",
+            "ABBV",
+            "PFE",
             # XLE (Energy)
-            "XOM", "CVX", "COP", "EOG", "SLB",
+            "XOM",
+            "CVX",
+            "COP",
+            "EOG",
+            "SLB",
             # XLI (Industrials)
-            "GE", "HON", "CAT", "RTX", "UPS",
+            "GE",
+            "HON",
+            "CAT",
+            "RTX",
+            "UPS",
             # XLC (Communication Services)
-            "META", "GOOGL", "DIS", "CMCSA", "NFLX",
+            "META",
+            "GOOGL",
+            "DIS",
+            "CMCSA",
+            "NFLX",
             # XLY (Consumer Discretionary)
-            "AMZN", "TSLA", "HD", "MCD", "NKE",
+            "AMZN",
+            "TSLA",
+            "HD",
+            "MCD",
+            "NKE",
             # XLP (Consumer Staples)
-            "PG", "KO", "PEP", "COST", "WMT",
+            "PG",
+            "KO",
+            "PEP",
+            "COST",
+            "WMT",
             # XLB (Materials)
-            "LIN", "SHW", "APD", "ECL", "FCX",
+            "LIN",
+            "SHW",
+            "APD",
+            "ECL",
+            "FCX",
             # XLU (Utilities)
-            "NEE", "DUK", "SO", "AEP", "D",
+            "NEE",
+            "DUK",
+            "SO",
+            "AEP",
+            "D",
         ]
     )
     # DATA-02: benchmark + sector-ETF + macro ticker registry. Lists are
     # configurable per CLAUDE.md anti-recommendation rule "Hardcoded sector ETF
     # lists" → reject. Plan 04's OHLCV refresh reads the `benchmarks` table
     # populated from these to know which non-universe tickers to fetch prices for.
-    benchmarks: list[str] = Field(
-        default_factory=lambda: ["SPY", "QQQ", "IWM", "DIA"]
-    )
+    benchmarks: list[str] = Field(default_factory=lambda: ["SPY", "QQQ", "IWM", "DIA"])
     sector_etfs: list[str] = Field(
         default_factory=lambda: [
-            "XLK", "XLF", "XLV", "XLE", "XLI", "XLC",
-            "XLY", "XLP", "XLB", "XLRE", "XLU",
+            "XLK",
+            "XLF",
+            "XLV",
+            "XLE",
+            "XLI",
+            "XLC",
+            "XLY",
+            "XLP",
+            "XLB",
+            "XLRE",
+            "XLU",
         ]
     )
-    macro_tickers: list[str] = Field(
-        default_factory=lambda: ["^VIX", "TLT", "HYG"]
-    )
+    macro_tickers: list[str] = Field(default_factory=lambda: ["^VIX", "TLT", "HYG"])
     yfinance_max_workers: int = Field(default=8, ge=1, le=32)
     tracked_funds: list[TrackedFund] = Field(
         default_factory=lambda: [

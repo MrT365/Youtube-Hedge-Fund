@@ -15,6 +15,7 @@ accession are no-ops. Per-(provider, feed_type, ticker) cursor lives in
 ``refresh_state`` so subsequent runs only ask EDGAR for filings filed since
 the prior ``last_value_text``.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -60,8 +61,7 @@ def refresh_filings(
             tickers = [
                 r[0]
                 for r in conn.execute(
-                    "SELECT ticker FROM universe "
-                    "WHERE delisted_date IS NULL ORDER BY ticker"
+                    "SELECT ticker FROM universe WHERE delisted_date IS NULL ORDER BY ticker"
                 )
             ]
         if provider is None:
@@ -78,35 +78,49 @@ def refresh_filings(
                 since = _last_filed_date(conn, ticker, form, today)
                 try:
                     rows = provider.fetch_filings(
-                        ticker, [form], since=since, cache_dir=cache_dir,
+                        ticker,
+                        [form],
+                        since=since,
+                        cache_dir=cache_dir,
                     )
                     for fr in rows:
                         _insert_filing(conn, fr)
                         filings_inserted += 1
                         if form == "4":
                             insider_rows = provider.parse_form4(
-                                fr["accession_number"], Path(fr["filepath"]),
+                                fr["accession_number"],
+                                Path(fr["filepath"]),
                             )
                             for ir in insider_rows:
                                 ir["filed_date"] = fr["filed_date"]
                                 _insert_insider(conn, ir)
                                 insider_inserted += 1
-                    last_filed = max(
-                        (r["filed_date"] for r in rows), default=None
-                    )
+                    last_filed = max((r["filed_date"] for r in rows), default=None)
                     _persist_refresh_state(
-                        conn, "edgar", f"filings_{form}", ticker,
-                        last_filed, "OK", None,
+                        conn,
+                        "edgar",
+                        f"filings_{form}",
+                        ticker,
+                        last_filed,
+                        "OK",
+                        None,
                     )
                     ok += 1
-                except Exception as e:  # noqa: BLE001 — log+continue per data layer pattern
+                except Exception as e:
                     log.error(
                         "filings_fetch_failed",
-                        ticker=ticker, form=form, error=str(e),
+                        ticker=ticker,
+                        form=form,
+                        error=str(e),
                     )
                     _persist_refresh_state(
-                        conn, "edgar", f"filings_{form}", ticker,
-                        None, "FAILED", str(e)[:500],
+                        conn,
+                        "edgar",
+                        f"filings_{form}",
+                        ticker,
+                        None,
+                        "FAILED",
+                        str(e)[:500],
                     )
                     failed += 1
 
@@ -124,12 +138,14 @@ def refresh_filings(
 
 
 def _last_filed_date(
-    conn: sqlite3.Connection, ticker: str, form: str, today: date,
+    conn: sqlite3.Connection,
+    ticker: str,
+    form: str,
+    today: date,
 ) -> date | None:
     """Return the latest filed_date for (ticker, form), or a backfill anchor."""
     row = conn.execute(
-        "SELECT MAX(filed_date) FROM filings_metadata "
-        "WHERE ticker=? AND form_type=?",
+        "SELECT MAX(filed_date) FROM filings_metadata WHERE ticker=? AND form_type=?",
         (ticker, form),
     ).fetchone()
     if row is None or row[0] is None:
@@ -152,9 +168,15 @@ def _insert_filing(conn: sqlite3.Connection, fr: dict[str, Any]) -> None:
             period_of_report, filepath, content_hash, fetched_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
-            fr["accession_number"], fr["ticker"], fr["cik"],
-            fr["form_type"], fr["filed_date"], fr.get("period_of_report"),
-            fr["filepath"], fr.get("content_hash"), int(time.time()),
+            fr["accession_number"],
+            fr["ticker"],
+            fr["cik"],
+            fr["form_type"],
+            fr["filed_date"],
+            fr.get("period_of_report"),
+            fr["filepath"],
+            fr.get("content_hash"),
+            int(time.time()),
         ),
     )
 
@@ -170,13 +192,21 @@ def _insert_insider(conn: sqlite3.Connection, ir: dict[str, Any]) -> None:
             transaction_date, filed_date, ownership_type)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
-            ir["accession_number"], ir["line_no"], ir["ticker"],
-            ir.get("insider_name"), ir.get("insider_title"),
-            ir.get("is_officer", 0), ir.get("is_director", 0),
+            ir["accession_number"],
+            ir["line_no"],
+            ir["ticker"],
+            ir.get("insider_name"),
+            ir.get("insider_title"),
+            ir.get("is_officer", 0),
+            ir.get("is_director", 0),
             ir.get("is_ten_percent_owner", 0),
-            ir["transaction_code"], ir.get("transaction_type"),
-            ir.get("shares"), ir.get("price_per_share"), ir.get("total_value"),
-            ir["transaction_date"], ir.get("filed_date") or "",
+            ir["transaction_code"],
+            ir.get("transaction_type"),
+            ir.get("shares"),
+            ir.get("price_per_share"),
+            ir.get("total_value"),
+            ir["transaction_date"],
+            ir.get("filed_date") or "",
             ir.get("ownership_type"),
         ),
     )
@@ -198,8 +228,13 @@ def _persist_refresh_state(
             last_refreshed, status, last_error)
            VALUES (?, ?, ?, ?, NULL, ?, ?, ?)""",
         (
-            provider_name, feed_type, ticker, last_value_text,
-            int(time.time()), status, last_error,
+            provider_name,
+            feed_type,
+            ticker,
+            last_value_text,
+            int(time.time()),
+            status,
+            last_error,
         ),
     )
 

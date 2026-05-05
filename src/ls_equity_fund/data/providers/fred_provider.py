@@ -13,8 +13,10 @@ Plan-level decisions (see 01-08-PLAN.md):
     (e.g. "16-17" → day 17). Multi-month entries ("April/May") use the
     second month name (the actual decision month).
 """
+
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import re
 from datetime import date, datetime, timedelta
@@ -27,14 +29,21 @@ log = structlog.get_logger(__name__)
 FOMC_CALENDAR_URL = "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
 
 # User-Agent: identify ourselves with a contact (mirrors EDGAR convention).
-_DEFAULT_USER_AGENT = (
-    "Meridian Capital Partners macro-calendar-bot (one operator; weekly fetch)"
-)
+_DEFAULT_USER_AGENT = "Meridian Capital Partners macro-calendar-bot (one operator; weekly fetch)"
 
 _MONTH_MAP: dict[str, int] = {
-    "january": 1, "february": 2, "march": 3, "april": 4,
-    "may": 5, "june": 6, "july": 7, "august": 8,
-    "september": 9, "october": 10, "november": 11, "december": 12,
+    "january": 1,
+    "february": 2,
+    "march": 3,
+    "april": 4,
+    "may": 5,
+    "june": 6,
+    "july": 7,
+    "august": 8,
+    "september": 9,
+    "october": 10,
+    "november": 11,
+    "december": 12,
 }
 
 
@@ -59,11 +68,9 @@ class FedScraperProvider:
             except ImportError:
                 session = None
         if session is not None:
-            try:
+            # Some test mocks don't support headers attribute — non-fatal.
+            with contextlib.suppress(Exception):
                 session.headers.update({"User-Agent": user_agent})
-            except Exception:
-                # Some test mocks don't support headers attribute — non-fatal.
-                pass
         self.session = session
 
     def fetch_macro_events(
@@ -86,14 +93,10 @@ class FedScraperProvider:
         if html is None:
             try:
                 if self.session is None:
-                    raise NetworkError(
-                        "FOMC calendar fetch failed: no HTTP session available"
-                    )
+                    raise NetworkError("FOMC calendar fetch failed: no HTTP session available")
                 resp = self.session.get(url, timeout=30)
                 if resp.status_code != 200:
-                    raise NetworkError(
-                        f"FOMC calendar fetch failed: status={resp.status_code}"
-                    )
+                    raise NetworkError(f"FOMC calendar fetch failed: status={resp.status_code}")
                 html = resp.text
             except NetworkError:
                 raise
@@ -107,9 +110,7 @@ class FedScraperProvider:
 
         today = date.today()
         cutoff = today + timedelta(days=lookahead_days)
-        filtered = [
-            e for e in events if today <= _to_date(e["event_date_et"]) <= cutoff
-        ]
+        filtered = [e for e in events if today <= _to_date(e["event_date_et"]) <= cutoff]
         return sorted(filtered, key=lambda e: e["event_date_et"])
 
     @staticmethod
@@ -141,25 +142,24 @@ class FedScraperProvider:
                     continue
                 event_date_et = event_date.isoformat()
                 event_date_local = _to_local(event_date)
-                event_id = hashlib.sha1(
-                    f"FOMC|{event_date_et}".encode()
-                ).hexdigest()[:16]
-                events.append({
-                    "event_id": event_id,
-                    "event_type": "FOMC",
-                    "event_date_et": event_date_et,
-                    "event_date_local": event_date_local,
-                    "description": f"FOMC Meeting ({month_label})",
-                    "source": "federalreserve.gov",
-                })
+                event_id = hashlib.sha1(f"FOMC|{event_date_et}".encode()).hexdigest()[:16]
+                events.append(
+                    {
+                        "event_id": event_id,
+                        "event_type": "FOMC",
+                        "event_date_et": event_date_et,
+                        "event_date_local": event_date_local,
+                        "description": f"FOMC Meeting ({month_label})",
+                        "source": "federalreserve.gov",
+                    }
+                )
         return events
 
 
 # ---------- helpers ----------
 
-def _resolve_meeting_date(
-    year: int, month_label: str, day_range: str
-) -> date | None:
+
+def _resolve_meeting_date(year: int, month_label: str, day_range: str) -> date | None:
     """Pick the SECOND day of the meeting (the "decision day") as event_date_et.
 
     Multi-month labels like "April/May" use the SECOND token (the decision

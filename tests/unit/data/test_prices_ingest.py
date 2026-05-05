@@ -1,10 +1,11 @@
 """refresh_prices orchestrator tests — uses fake provider, no network.
 
-Binds Plan 01-04 Task 2: orchestrator must walk universe ∪ benchmarks
+Binds Plan 01-04 Task 2: orchestrator must walk universe U benchmarks
 (excluding delisted), compute incremental window per ticker, fetch via the
 configured provider, persist to ``daily_prices`` with INSERT OR IGNORE,
 update ``refresh_state``, and log+continue on per-ticker YFinanceError.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -76,9 +77,7 @@ def _make_panel(ticker: str, dates: list[str]) -> pd.DataFrame:
 def test_refresh_writes_rows_and_updates_refresh_state(config, setup_db: Path) -> None:
     fake_provider = MagicMock()
     fake_provider.get_last_stored_date.return_value = None  # first run
-    fake_provider.get_prices.return_value = _make_panel(
-        "AAPL", ["2026-04-01", "2026-04-02"]
-    )
+    fake_provider.get_prices.return_value = _make_panel("AAPL", ["2026-04-01", "2026-04-02"])
 
     conn = sqlite3.connect(str(setup_db))
     try:
@@ -93,9 +92,7 @@ def test_refresh_writes_rows_and_updates_refresh_state(config, setup_db: Path) -
         assert result["failed"] == 0
         assert result["rows_written"] == 2
 
-        n = conn.execute(
-            "SELECT COUNT(*) FROM daily_prices WHERE ticker='AAPL'"
-        ).fetchone()[0]
+        n = conn.execute("SELECT COUNT(*) FROM daily_prices WHERE ticker='AAPL'").fetchone()[0]
         assert n == 2
 
         rs = conn.execute(
@@ -174,15 +171,14 @@ def test_refresh_uses_universe_and_benchmarks_by_default(config, setup_db: Path)
         "VALUES ('AAPL', '2026-01-01', '2026-01-01:current', 0)"
     )
     conn.execute(
-        "INSERT INTO benchmarks (ticker, category, last_updated) "
-        "VALUES ('SPY', 'benchmark', 0)"
+        "INSERT INTO benchmarks (ticker, category, last_updated) VALUES ('SPY', 'benchmark', 0)"
     )
     conn.commit()
 
     fake_provider = MagicMock()
     fake_provider.get_last_stored_date.return_value = None
-    fake_provider.get_prices.side_effect = (
-        lambda tickers, *a, **k: _make_panel(tickers[0], ["2026-04-01"])
+    fake_provider.get_prices.side_effect = lambda tickers, *a, **k: _make_panel(
+        tickers[0], ["2026-04-01"]
     )
 
     try:
@@ -209,8 +205,8 @@ def test_refresh_excludes_delisted_universe_tickers(config, setup_db: Path) -> N
 
     fake_provider = MagicMock()
     fake_provider.get_last_stored_date.return_value = None
-    fake_provider.get_prices.side_effect = (
-        lambda tickers, *a, **k: _make_panel(tickers[0], ["2026-04-01"])
+    fake_provider.get_prices.side_effect = lambda tickers, *a, **k: _make_panel(
+        tickers[0], ["2026-04-01"]
     )
 
     try:

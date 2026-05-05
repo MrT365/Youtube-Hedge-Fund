@@ -4,6 +4,7 @@ The 7-fixture parametrized round-trip is the canonical CP3 binding: each
 Form 4 transaction code (P/S/A/M/F/G/D) MUST be parsed and persisted as
 the literal letter so downstream scoring (Phase 2) can filter on P-only.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -21,9 +22,7 @@ FIXTURES = Path(__file__).resolve().parents[2] / "fixtures"
 
 @pytest.fixture
 def provider() -> EdgarProvider:
-    return EdgarProvider(
-        sec_user_agent="Meridian Capital Partners contact@example.com"
-    )
+    return EdgarProvider(sec_user_agent="Meridian Capital Partners contact@example.com")
 
 
 @pytest.mark.parametrize(
@@ -52,9 +51,7 @@ def test_form4_parses_all_seven_transaction_codes(
 
 
 def test_all_seven_codes_in_valid_set() -> None:
-    assert VALID_TRANSACTION_CODES == frozenset(
-        {"P", "S", "A", "M", "F", "G", "D"}
-    )
+    assert frozenset({"P", "S", "A", "M", "F", "G", "D"}) == VALID_TRANSACTION_CODES
 
 
 def test_parse_form4_extracts_insider_metadata(provider: EdgarProvider) -> None:
@@ -77,9 +74,7 @@ def test_ceo_cfo_title_regex_detects_titles() -> None:
     assert not CEO_CFO_TITLE_RE.search("VP Engineering")
 
 
-def test_unknown_code_is_skipped_with_warning(
-    provider: EdgarProvider, tmp_path: Path
-) -> None:
+def test_unknown_code_is_skipped_with_warning(provider: EdgarProvider, tmp_path: Path) -> None:
     """Schema CHECK constraint enforces the 7 codes — parser skips invalid."""
     bad = tmp_path / "bad.xml"
     bad.write_text(

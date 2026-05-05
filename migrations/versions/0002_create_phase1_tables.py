@@ -224,7 +224,9 @@ def upgrade() -> None:
         )
         """
     )
-    op.execute("CREATE INDEX idx_insider_ticker_date ON insider_transactions(ticker, transaction_date)")
+    op.execute(
+        "CREATE INDEX idx_insider_ticker_date ON insider_transactions(ticker, transaction_date)"
+    )
     op.execute("CREATE INDEX idx_insider_code ON insider_transactions(transaction_code)")
 
     # ----- 8. institutional_holdings (DATA-07; 13F — period_end vs filed_date distinct, D4 binding) -----

@@ -16,13 +16,14 @@ Per ARCHITECTURE.md §7 / Plan-level decision: ``ThreadPoolExecutor`` with
 ``config.data.yfinance_max_workers`` (default 8) — yfinance is sync, threads
 not asyncio. 8 chosen to balance throughput vs Yahoo bot-detection.
 """
+
 from __future__ import annotations
 
 import sqlite3
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
-from typing import Any
+from typing import Any, cast
 
 import pandas as pd
 import structlog
@@ -83,9 +84,7 @@ def refresh_prices(
             if last is None:
                 fetch_start = start_date
             elif last >= today:
-                _persist_refresh_state(
-                    conn, t, last.isoformat(), "SKIPPED", None
-                )
+                _persist_refresh_state(conn, t, last.isoformat(), "SKIPPED", None)
                 skipped += 1
                 continue
             else:
@@ -95,10 +94,7 @@ def refresh_prices(
         # Parallel fetch with bounded concurrency
         max_workers = config.data.yfinance_max_workers
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
-            futures = {
-                pool.submit(_fetch_one, provider, t, s, e): t
-                for (t, s, e) in work
-            }
+            futures = {pool.submit(_fetch_one, provider, t, s, e): t for (t, s, e) in work}
             for fut in as_completed(futures):
                 ticker = futures[fut]
                 try:
@@ -111,9 +107,7 @@ def refresh_prices(
                 except YFinanceError as e:
                     # Plan-level: log+continue — the daily run must complete.
                     log.error("price_fetch_failed", ticker=ticker, error=str(e))
-                    _persist_refresh_state(
-                        conn, ticker, None, "FAILED", str(e)[:500]
-                    )
+                    _persist_refresh_state(conn, ticker, None, "FAILED", str(e)[:500])
                     failed += 1
                 except Exception as e:  # pragma: no cover — defensive
                     log.error(
@@ -121,9 +115,7 @@ def refresh_prices(
                         ticker=ticker,
                         error=str(e),
                     )
-                    _persist_refresh_state(
-                        conn, ticker, None, "FAILED", str(e)[:500]
-                    )
+                    _persist_refresh_state(conn, ticker, None, "FAILED", str(e)[:500])
                     failed += 1
 
         result = {
@@ -150,16 +142,14 @@ def _load_default_tickers(conn: sqlite3.Connection) -> list[str]:
     return [r[0] for r in rows]
 
 
-def _fetch_one(
-    provider: Any, ticker: str, start: date, end: date
-) -> pd.DataFrame:
+def _fetch_one(provider: Any, ticker: str, start: date, end: date) -> pd.DataFrame:
     return provider.get_prices([ticker], start, end)
 
 
 def _df_max_date_str(df: pd.DataFrame) -> str:
     last_date = df.index.get_level_values("date").max()
     if hasattr(last_date, "date"):
-        return last_date.date().isoformat()
+        return cast("str", last_date.date().isoformat())
     return str(last_date)[:10]
 
 

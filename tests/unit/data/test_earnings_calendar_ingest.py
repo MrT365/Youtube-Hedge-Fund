@@ -13,6 +13,7 @@ Validates the orchestrator pattern for DATA-10 earnings-calendar refresh:
 Per PITFALLS D6: yfinance earnings dates are noisy. This module records what
 yfinance reports; downstream Phase 5 applies a 5-day buffer.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -72,7 +73,10 @@ def test_refresh_writes_upcoming_earnings(setup) -> None:
     ]
 
     result = refresh_earnings_calendar(
-        config_obj, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config_obj,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     assert result["ok"] == 1
     assert result["rows_written"] == 1
@@ -96,12 +100,14 @@ def test_purge_expired_dates_on_refresh(setup) -> None:
     fake.get_next_earnings_dates.return_value = []
 
     refresh_earnings_calendar(
-        config_obj, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config_obj,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
 
     n = conn.execute(
-        "SELECT COUNT(*) FROM earnings_calendar "
-        "WHERE expected_date='2025-12-15'"
+        "SELECT COUNT(*) FROM earnings_calendar WHERE expected_date='2025-12-15'"
     ).fetchone()[0]
     assert n == 0  # expired row purged
 
@@ -113,7 +119,10 @@ def test_empty_events_means_no_upcoming(setup) -> None:
     fake.get_next_earnings_dates.return_value = []
 
     result = refresh_earnings_calendar(
-        config_obj, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config_obj,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     assert result["ok"] == 1  # ticker processed
     assert result["rows_written"] == 0  # no upcoming earnings
@@ -129,7 +138,10 @@ def test_multiple_events_per_ticker(setup) -> None:
     ]
 
     result = refresh_earnings_calendar(
-        config_obj, conn=conn, today=date(2026, 4, 1), provider=fake,
+        config_obj,
+        conn=conn,
+        today=date(2026, 4, 1),
+        provider=fake,
     )
     assert result["rows_written"] == 2
 

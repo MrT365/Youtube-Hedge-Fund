@@ -73,6 +73,7 @@ ignore = ["E501"]  # line length handled by formatter
 [tool.ruff.lint.per-file-ignores]
 "src/ls_equity_fund/cli/**/*.py" = ["B008"]  # Typer requires typer.Option/Argument as defaults
 "src/ls_equity_fund/cli/*.py" = ["B008"]
+"src/ls_equity_fund/data/**/*.py" = ["RUF002"]  # math notation × ∪ in docstrings is intentional
 
 [tool.ruff.format]
 quote-style = "double"
@@ -97,3 +98,8 @@ minversion = "9.0"
 testpaths = ["tests"]
 addopts = ["-ra", "--strict-markers", "--strict-config"]
 asyncio_mode = "auto"
+
+[dependency-groups]
+dev = [
+    "types-requests>=2.33.0.20260503",
+]
