@@ -8,7 +8,6 @@ from datetime import date
 from pathlib import Path
 
 import pandas as pd
-import pytest
 from alembic import command
 from alembic.config import Config as AlembicConfig
 

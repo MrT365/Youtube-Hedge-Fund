@@ -40,13 +40,15 @@ def test_daily_refresh_stub_accepts_flags() -> None:
     assert "not implemented" in result.stdout
 
 
-def test_run_analysis_stub_accepts_flags() -> None:
+def test_run_analysis_estimate_cost_mode() -> None:
+    """Phase 4 replaced the stub; --estimate-cost is the cheapest live mode."""
     result = runner.invoke(
         app,
         ["run-analysis", "--ticker", "AAPL", "--sector", "Tech", "--estimate-cost"],
     )
     assert result.exit_code == 0, f"stderr: {result.stderr}"
-    assert "not implemented" in result.stdout
+    assert "Cost estimate" in result.stdout
+    assert "TOTAL" in result.stdout
 
 
 def test_run_portfolio_stub_accepts_conviction() -> None:

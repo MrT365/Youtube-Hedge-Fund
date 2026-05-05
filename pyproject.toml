@@ -75,6 +75,7 @@ ignore = ["E501"]  # line length handled by formatter
 "src/ls_equity_fund/cli/*.py" = ["B008"]
 "src/ls_equity_fund/data/**/*.py" = ["RUF002"]  # math notation × ∪ in docstrings is intentional
 "src/ls_equity_fund/dashboard/**/*.py" = ["RUF002"]  # math notation × in docstrings is intentional
+"src/ls_equity_fund/analysis/**/*.py" = ["RUF002"]  # math notation × in docstrings is intentional
 
 [tool.ruff.format]
 quote-style = "double"
