@@ -7,20 +7,20 @@
 
 ### DATA (Layer 1 — Data Infrastructure)
 
-- [ ] **DATA-01**: Operator can build a US equities universe in three modes (`sp500` from Wikipedia, `liquid_us` filtered by exchange + min price + min ADV + min market cap, `scanner_seed` from IBKR scanner output or seed list) with ticker, company, exchange, primary listing, sector, industry/sub-industry persisted
-- [ ] **DATA-02**: System maintains benchmark tickers (SPY, QQQ, IWM, DIA; sector ETFs XLK/XLF/XLV/XLE/XLI/XLC/XLY/XLP/XLB/XLRE/XLU; ^VIX, TLT, HYG) refreshed on schedule
-- [ ] **DATA-03**: System ingests daily OHLCV via yfinance for universe + benchmarks with 3-year lookback and incremental updates (only fetch since last stored date) into SQLite `daily_prices`
-- [ ] **DATA-04**: System ingests quarterly + annual income statement, balance sheet, cash flow via yfinance and computes 24 derived ratios (ROE, ROA, gross/op/net margin, rev growth YoY/QoQ, earnings growth YoY/QoQ, D/E, FCF yield, current ratio, AR/rev, CFO/NI, accruals, retained earnings, working capital, total liabilities, EBIT, R&D, shares out, dividends, buybacks, asset turnover)
-- [ ] **DATA-05**: System fetches 10-K (Risk Factors), 10-Q (MD&A), recent 8-K, and recent Form 4 filings from SEC EDGAR with compliant User-Agent and rate limiting
-- [ ] **DATA-06**: System parses Form 4 XML into `insider_transactions` (ticker, insider_name, title, transaction_type, transaction_code, shares, price, date, ownership_type) distinguishing P/S from A/M/F codes; flags CEO/CFO purchases and 30-day 3+ insider cluster buys
-- [ ] **DATA-07**: System ingests 13F filings from a tracked-fund list (Citadel, Point72, Bridgewater, Tiger Global, Third Point, Berkshire, Appaloosa, Baupost, Pershing Square) and flags tickers with 3+ tracked funds opening simultaneously
-- [ ] **DATA-08**: System captures daily snapshots of `shares_short`, `short_ratio`, `short_percent_of_float` into `short_interest`
-- [ ] **DATA-09**: System captures daily snapshots of forward EPS estimate and price-target consensus into `analyst_estimates` for 30/60/90-day revision deltas
-- [ ] **DATA-10**: System maintains an upcoming-earnings calendar (next 30 days) refreshed daily
-- [ ] **DATA-11**: System maintains a live FOMC macro calendar parsed from the official Federal Reserve source, ET + local TZ, refreshed weekly, with cached fallback + warning on parse failure
-- [ ] **DATA-12**: Daily refresh supports `--no-filings` and `--no-13f` skip flags + `--forms` selective pull
-- [ ] **DATA-13**: System persists a point-in-time universe table with `first_seen_date` and `delisted_date` columns so historical queries can be reproduced free of survivorship bias *(gap G2 from research)*
-- [ ] **DATA-14**: Data layer exposes a `MarketDataProvider` interface (yfinance is the default implementation) so a paid feed (Polygon / Tiingo / IEX / Alpha Vantage) can drop in by config without rewriting downstream code
+- [x] **DATA-01**: Operator can build a US equities universe in three modes (`sp500` from Wikipedia, `liquid_us` filtered by exchange + min price + min ADV + min market cap, `scanner_seed` from IBKR scanner output or seed list) with ticker, company, exchange, primary listing, sector, industry/sub-industry persisted
+- [x] **DATA-02**: System maintains benchmark tickers (SPY, QQQ, IWM, DIA; sector ETFs XLK/XLF/XLV/XLE/XLI/XLC/XLY/XLP/XLB/XLRE/XLU; ^VIX, TLT, HYG) refreshed on schedule
+- [x] **DATA-03**: System ingests daily OHLCV via yfinance for universe + benchmarks with 3-year lookback and incremental updates (only fetch since last stored date) into SQLite `daily_prices`
+- [x] **DATA-04**: System ingests quarterly + annual income statement, balance sheet, cash flow via yfinance and computes 24 derived ratios (ROE, ROA, gross/op/net margin, rev growth YoY/QoQ, earnings growth YoY/QoQ, D/E, FCF yield, current ratio, AR/rev, CFO/NI, accruals, retained earnings, working capital, total liabilities, EBIT, R&D, shares out, dividends, buybacks, asset turnover)
+- [x] **DATA-05**: System fetches 10-K (Risk Factors), 10-Q (MD&A), recent 8-K, and recent Form 4 filings from SEC EDGAR with compliant User-Agent and rate limiting
+- [x] **DATA-06**: System parses Form 4 XML into `insider_transactions` (ticker, insider_name, title, transaction_type, transaction_code, shares, price, date, ownership_type) distinguishing P/S from A/M/F codes; flags CEO/CFO purchases and 30-day 3+ insider cluster buys
+- [x] **DATA-07**: System ingests 13F filings from a tracked-fund list (Citadel, Point72, Bridgewater, Tiger Global, Third Point, Berkshire, Appaloosa, Baupost, Pershing Square) and flags tickers with 3+ tracked funds opening simultaneously
+- [x] **DATA-08**: System captures daily snapshots of `shares_short`, `short_ratio`, `short_percent_of_float` into `short_interest`
+- [x] **DATA-09**: System captures daily snapshots of forward EPS estimate and price-target consensus into `analyst_estimates` for 30/60/90-day revision deltas
+- [x] **DATA-10**: System maintains an upcoming-earnings calendar (next 30 days) refreshed daily
+- [x] **DATA-11**: System maintains a live FOMC macro calendar parsed from the official Federal Reserve source, ET + local TZ, refreshed weekly, with cached fallback + warning on parse failure
+- [x] **DATA-12**: Daily refresh supports `--no-filings` and `--no-13f` skip flags + `--forms` selective pull
+- [x] **DATA-13**: System persists a point-in-time universe table with `first_seen_date` and `delisted_date` columns so historical queries can be reproduced free of survivorship bias *(gap G2 from research)*
+- [x] **DATA-14**: Data layer exposes a `MarketDataProvider` interface (yfinance is the default implementation) so a paid feed (Polygon / Tiingo / IEX / Alpha Vantage) can drop in by config without rewriting downstream code
 
 ### SCORE (Layer 2 — Scoring Engine)
 
@@ -165,20 +165,20 @@ Populated by roadmap creation 2026-05-04. Every v1 REQ-ID maps to exactly one ph
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
-| DATA-05 | Phase 1 | Pending |
-| DATA-06 | Phase 1 | Pending |
-| DATA-07 | Phase 1 | Pending |
-| DATA-08 | Phase 1 | Pending |
-| DATA-09 | Phase 1 | Pending |
-| DATA-10 | Phase 1 | Pending |
-| DATA-11 | Phase 1 | Pending |
-| DATA-12 | Phase 1 | Pending |
-| DATA-13 | Phase 1 | Pending |
-| DATA-14 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
+| DATA-02 | Phase 1 | Complete |
+| DATA-03 | Phase 1 | Complete |
+| DATA-04 | Phase 1 | Complete |
+| DATA-05 | Phase 1 | Complete |
+| DATA-06 | Phase 1 | Complete |
+| DATA-07 | Phase 1 | Complete |
+| DATA-08 | Phase 1 | Complete |
+| DATA-09 | Phase 1 | Complete |
+| DATA-10 | Phase 1 | Complete |
+| DATA-11 | Phase 1 | Complete |
+| DATA-12 | Phase 1 | Complete |
+| DATA-13 | Phase 1 | Complete |
+| DATA-14 | Phase 1 | Complete |
 | SCORE-01 | Phase 2 | Pending |
 | SCORE-02 | Phase 2 | Pending |
 | SCORE-03 | Phase 2 | Pending |
