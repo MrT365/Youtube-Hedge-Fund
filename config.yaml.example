@@ -11,6 +11,10 @@ data:
   lookback_years: 3
   benchmark: SPY
   cache_dir: cache
+  # Benchmark + sector-ETF + macro tickers (DATA-02). NEVER hardcode in source.
+  benchmarks: [SPY, QQQ, IWM, DIA]
+  sector_etfs: [XLK, XLF, XLV, XLE, XLI, XLC, XLY, XLP, XLB, XLRE, XLU]
+  macro_tickers: ["^VIX", TLT, HYG]
 
 broker:
   paper_host: 127.0.0.1

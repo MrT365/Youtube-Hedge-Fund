@@ -37,6 +37,22 @@ class DataConfig(BaseModel):
     lookback_years: int = Field(default=3, ge=1, le=20)
     benchmark: str = "SPY"
     cache_dir: str = "cache"
+    # DATA-02: benchmark + sector-ETF + macro ticker registry. Lists are
+    # configurable per CLAUDE.md anti-recommendation rule "Hardcoded sector ETF
+    # lists" → reject. Plan 04's OHLCV refresh reads the `benchmarks` table
+    # populated from these to know which non-universe tickers to fetch prices for.
+    benchmarks: list[str] = Field(
+        default_factory=lambda: ["SPY", "QQQ", "IWM", "DIA"]
+    )
+    sector_etfs: list[str] = Field(
+        default_factory=lambda: [
+            "XLK", "XLF", "XLV", "XLE", "XLI", "XLC",
+            "XLY", "XLP", "XLB", "XLRE", "XLU",
+        ]
+    )
+    macro_tickers: list[str] = Field(
+        default_factory=lambda: ["^VIX", "TLT", "HYG"]
+    )
 
 
 class BrokerConfig(BaseModel):
