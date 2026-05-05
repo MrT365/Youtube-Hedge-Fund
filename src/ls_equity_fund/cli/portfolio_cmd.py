@@ -2,7 +2,8 @@
 
 Modes:
   --optimize-method conviction  (default) — ships Phase 5
-  --optimize-method mvo                    — Phase 7 swap-in (raises here)
+  --optimize-method mvo                    — Phase 7 SLSQP MVO with
+                                              conviction fallback
   --whatif                                 — preview only; do not persist current
                                               positions, do persist position_approvals
                                               + portfolio_history snapshot for audit
@@ -23,7 +24,7 @@ Exit codes:
   5  invalid CLI arg
   6  no L2 scoring data on the asof
   7  partial — at least one downstream piece (e.g. beta) failed but trades emitted
-  8  MVO requested but Phase 7 not shipped
+  8  optimizer failed
 """
 
 from __future__ import annotations
@@ -32,18 +33,23 @@ import uuid
 from datetime import date as date_type
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 import structlog
 import typer
 
-from ls_equity_fund.config import load_config
+from ls_equity_fund.config import PortfolioConfig, load_config
 from ls_equity_fund.db import get_connection, get_db_path
 from ls_equity_fund.logging import bind_run_id, configure_logging
 from ls_equity_fund.portfolio.beta import compute_betas
-from ls_equity_fund.portfolio.conviction_tilt import build_target_book, load_candidate_frame
+from ls_equity_fund.portfolio.conviction_tilt import (
+    ConvictionTiltResult,
+    build_target_book,
+    load_candidate_frame,
+)
 from ls_equity_fund.portfolio.factor_exposure import compute_factor_exposure
-from ls_equity_fund.portfolio.mvo import PHASE7_DEFER_MSG, MVOOptimizer
+from ls_equity_fund.portfolio.mvo import MVOResult, build_mvo_or_fallback
 from ls_equity_fund.portfolio.rebalance import generate_rebalance
 from ls_equity_fund.portfolio.schedule import evaluate_schedule
 from ls_equity_fund.portfolio.state import (
@@ -51,15 +57,21 @@ from ls_equity_fund.portfolio.state import (
     write_portfolio_history,
     write_position_approvals,
 )
+from ls_equity_fund.risk.factor_model import compute_factor_risk_model
+from ls_equity_fund.risk.pre_trade_veto import (
+    TradeRequest,
+    VetoContext,
+    evaluate_pre_trade_veto,
+)
 
 
 def run_portfolio(
     config_path: Path = typer.Option(Path("config.yaml"), "--config", help="Path to config.yaml"),
     env_path: Path = typer.Option(Path(".env"), "--env", help="Path to .env"),
-    optimize_method: str = typer.Option(
-        "conviction",
+    optimize_method: str | None = typer.Option(
+        None,
         "--optimize-method",
-        help="conviction (Phase 5) | mvo (Phase 7 swap-in)",
+        help="conviction | mvo. Defaults to config.yaml portfolio.optimizer.",
     ),
     whatif: bool = typer.Option(
         False,
@@ -116,9 +128,10 @@ def run_portfolio(
         )
         raise typer.Exit(code=5) from exc
 
-    if optimize_method not in ("conviction", "mvo"):
+    selected_optimizer = optimize_method or config.portfolio.optimizer
+    if selected_optimizer not in ("conviction", "mvo"):
         typer.secho(
-            f"ERROR: --optimize-method must be conviction|mvo, got {optimize_method!r}",
+            f"ERROR: optimizer must be conviction|mvo, got {selected_optimizer!r}",
             fg=typer.colors.RED,
             err=True,
         )
@@ -128,7 +141,7 @@ def run_portfolio(
         "run_portfolio_invoked",
         run_id=str(run_id),
         asof=asof_date.isoformat(),
-        optimize_method=optimize_method,
+        optimize_method=selected_optimizer,
         whatif=whatif,
         dry_run=dry_run,
     )
@@ -136,26 +149,6 @@ def run_portfolio(
     db_path = get_db_path(config)
     conn = get_connection(db_path)
     try:
-        if optimize_method == "mvo":
-            # Validate Phase 7 stub is wired but raises with our message.
-            try:
-                MVOOptimizer(config.portfolio).optimize(pd.DataFrame(), None, {})
-            except NotImplementedError as exc:
-                typer.secho(
-                    f"ERROR: {exc} — flip optimizer back to conviction or wait for Phase 7",
-                    fg=typer.colors.RED,
-                    err=True,
-                )
-                raise typer.Exit(code=8) from exc
-            else:
-                # Defensive — should never reach here while stub raises.
-                typer.secho(
-                    f"ERROR: MVO did not raise expected NotImplementedError ({PHASE7_DEFER_MSG})",
-                    fg=typer.colors.RED,
-                    err=True,
-                )
-                raise typer.Exit(code=8)
-
         candidates = load_candidate_frame(
             conn,
             asof=asof_date,
@@ -180,12 +173,35 @@ def run_portfolio(
         )
         log.info("computed_betas", n=len(betas))
 
-        result = build_target_book(
-            candidates,
-            cfg=config.portfolio,
-            betas=betas,
-            target_aum_usd=config.portfolio.target_aum_usd,
-        )
+        result: ConvictionTiltResult | MVOResult
+        if selected_optimizer == "mvo":
+            initial_weights = pd.Series(0.0, index=candidates["ticker"].tolist())
+            risk_result = compute_factor_risk_model(
+                conn,
+                asof=asof_date,
+                weights=initial_weights,
+                lookback=config.risk.factor_model_window_days,
+            )
+            result = build_mvo_or_fallback(
+                conn,
+                candidates,
+                cfg=config.portfolio,
+                covariance=risk_result.predicted_covariance,
+                betas=betas,
+                target_aum_usd=config.portfolio.target_aum_usd,
+            )
+            if result.used_fallback:
+                typer.secho(
+                    f"MVO fallback used: {result.fallback_reason}",
+                    fg=typer.colors.YELLOW,
+                )
+        else:
+            result = build_target_book(
+                candidates,
+                cfg=config.portfolio,
+                betas=betas,
+                target_aum_usd=config.portfolio.target_aum_usd,
+            )
         if result.targets.empty:
             typer.secho(
                 "ERROR: optimiser produced an empty target book",
@@ -195,7 +211,8 @@ def run_portfolio(
             raise typer.Exit(code=6)
 
         # Surface the audit columns in run-portfolio's stdout.
-        _print_target_book(result, config.portfolio.gross_target)
+        _run_veto_preview(conn, result.targets, config.portfolio, current_positions=load_current_positions(conn))
+        _print_target_book(result, config.portfolio.gross_target, selected_optimizer)
 
         current = load_current_positions(conn)
         trades, summary = generate_rebalance(
@@ -230,7 +247,7 @@ def run_portfolio(
                 run_id=str(run_id),
                 asof=asof_date,
                 rows=approval_rows.to_dict(orient="records"),
-                optimizer="conviction",
+                optimizer=selected_optimizer,
             )
             log.info("wrote_position_approvals", n=n_approvals)
 
@@ -285,9 +302,41 @@ def run_portfolio(
 # -----------------------------------------------------------------------------
 
 
-def _print_target_book(result, gross_target: float) -> None:  # type: ignore[no-untyped-def]
+def _run_veto_preview(
+    conn: Any,
+    targets: pd.DataFrame,
+    portfolio_cfg: PortfolioConfig,
+    *,
+    current_positions: pd.DataFrame,
+) -> None:
+    """Evaluate Phase 6 veto code path for each target without blocking whatif output."""
+    context = VetoContext(
+        aum_usd=portfolio_cfg.target_aum_usd,
+        current_positions=current_positions,
+        max_net_beta=10.0,
+    )
+    for _, row in targets.iterrows():
+        shares = float(row.get("final_shares") or 0.0)
+        evaluate_pre_trade_veto(
+            conn,
+            trade=TradeRequest(
+                ticker=str(row["ticker"]),
+                side=str(row["side"]),
+                shares=shares,
+                price=float(row.get("limit_price") or row.get("price") or 0.0),
+                sector=row.get("sector"),
+                beta=row.get("beta"),
+                adv_20d_usd=row.get("adv_usd"),
+            ),
+            context=context,
+            portfolio_cfg=portfolio_cfg,
+            persist=False,
+        )
+
+
+def _print_target_book(result: ConvictionTiltResult | MVOResult, gross_target: float, optimizer: str) -> None:
     typer.secho(
-        "\nTarget book (Phase 5 conviction-tilt)",
+        f"\nTarget book ({optimizer})",
         fg=typer.colors.CYAN,
         bold=True,
     )

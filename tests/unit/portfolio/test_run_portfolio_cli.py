@@ -102,6 +102,7 @@ def _seeded_db(tmp_path: Path, asof: date) -> Path:
 
         # Combined factor scores: 100, 92, 84, ..., monotonic so longs/shorts split cleanly.
         score_rows = []
+        parent_rows = []
         for i, t in enumerate(tickers):
             score = 100.0 - i * 8.0
             score_rows.append(
@@ -118,6 +119,17 @@ def _seeded_db(tmp_path: Path, asof: date) -> Path:
                     now,
                 )
             )
+            for factor in (
+                "momentum",
+                "value",
+                "quality",
+                "growth",
+                "revisions",
+                "short_interest",
+                "insider",
+                "institutional",
+            ):
+                parent_rows.append((t, asof.isoformat(), factor, score, sectors[i % len(sectors)], 1, now))
         with conn:
             conn.executemany(
                 "INSERT INTO factor_scores ("
@@ -125,6 +137,12 @@ def _seeded_db(tmp_path: Path, asof: date) -> Path:
                 "sector, n_in_sector, sufficient_history, computed_at) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 score_rows,
+            )
+            conn.executemany(
+                "INSERT INTO factor_scores_parent ("
+                "ticker, score_date, factor, parent_score, sector, n_subfactors_used, computed_at"
+                ") VALUES (?, ?, ?, ?, ?, ?, ?)",
+                parent_rows,
             )
     finally:
         conn.close()
@@ -205,7 +223,7 @@ def test_run_portfolio_conviction_whatif_end_to_end(tmp_path: Path) -> None:
     assert n_history > 0, "expected portfolio_history rows after --whatif"
 
 
-def test_run_portfolio_mvo_raises_phase7_message(tmp_path: Path) -> None:
+def test_run_portfolio_mvo_flag_works(tmp_path: Path) -> None:
     asof = date(2026, 5, 1)
     seeded = _seeded_db(tmp_path, asof)
     cache_dir = tmp_path / "cache"
@@ -227,8 +245,34 @@ def test_run_portfolio_mvo_raises_phase7_message(tmp_path: Path) -> None:
             str(env),
         ],
     )
-    assert result.exit_code == 8
-    assert "MVO coming in Phase 7" in result.stderr or "Phase 7" in result.stderr
+    assert result.exit_code == 0, f"stdout: {result.stdout}\nstderr: {result.stderr}"
+    assert "Target book (mvo)" in result.stdout
+
+
+def test_run_portfolio_mvo_config_works(tmp_path: Path) -> None:
+    asof = date(2026, 5, 1)
+    seeded = _seeded_db(tmp_path, asof)
+    cache_dir = tmp_path / "cache"
+    yaml = _write_config_yaml(tmp_path / "config.yaml", seeded, cache_dir)
+    text = yaml.read_text(encoding="utf-8")
+    yaml.write_text(text.replace("optimizer: conviction", "optimizer: mvo"), encoding="utf-8")
+    env = _write_env(tmp_path / ".env")
+
+    result = runner.invoke(
+        app,
+        [
+            "run-portfolio",
+            "--whatif",
+            "--asof",
+            asof.isoformat(),
+            "--config",
+            str(yaml),
+            "--env",
+            str(env),
+        ],
+    )
+    assert result.exit_code == 0, f"stdout: {result.stdout}\nstderr: {result.stderr}"
+    assert "Target book (mvo)" in result.stdout or "MVO fallback used" in result.stdout
 
 
 def test_run_portfolio_invalid_method_exits_5(tmp_path: Path) -> None:
