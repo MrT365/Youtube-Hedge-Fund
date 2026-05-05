@@ -1,4 +1,4 @@
-"""Phase 0 stubs for the seven non-doctor CLI subcommands (D-23, INFRA-08).
+"""Phase 0 stubs for the remaining non-doctor CLI subcommands (D-23, INFRA-08).
 
 Each stub:
   * Accepts the global flags it will eventually consume so flag wiring is
@@ -7,9 +7,12 @@ Each stub:
   * Prints ``"<cmd>: not implemented in this phase (Phase X)"`` and exits 0.
   * Lists which phase will replace the stub for operator-readable provenance.
 
+Phase 1 (Plan 01-09) replaces the ``run-data`` stub with a real implementation
+in :mod:`ls_equity_fund.cli.data_cmd`. The remaining six stubs persist until
+their owning phase ships.
+
 Phase mapping:
   - ``daily-refresh``   -> Phase 10 (orchestrator); partial calls land earlier
-  - ``run-data``        -> Phase 1
   - ``run-scoring``     -> Phase 2
   - ``run-analysis``    -> Phase 4
   - ``run-portfolio``   -> Phase 5 (conviction) / Phase 7 (mvo swap-in)
@@ -36,15 +39,6 @@ def daily_refresh(
 ) -> None:
     """Stub — meta-orchestrator chaining L1->L7. Phase 10 wires fully."""
     typer.echo(f"daily-refresh: {_NOT_YET} (Phase 10 orchestrator)")
-
-
-def run_data(
-    no_filings: bool = typer.Option(False, "--no-filings", help="(future) skip EDGAR"),
-    no_13f: bool = typer.Option(False, "--no-13f", help="(future) skip 13F"),
-    ticker: str | None = typer.Option(None, "--ticker", help="(future) restrict to one ticker"),
-) -> None:
-    """Stub — L1 data refresh. Phase 1 fills."""
-    typer.echo(f"run-data: {_NOT_YET} (Phase 1)")
 
 
 def run_scoring(
@@ -104,7 +98,6 @@ def run_reporting(
 __all__ = [
     "daily_refresh",
     "run_analysis",
-    "run_data",
     "run_execution",
     "run_portfolio",
     "run_reporting",
