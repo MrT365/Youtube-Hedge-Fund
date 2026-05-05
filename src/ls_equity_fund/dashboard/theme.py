@@ -147,6 +147,69 @@ _CSS = f"""
   /* Long / short markers (used inline) */
   .long-tag {{color: {LONG_GREEN}; font-weight: 600;}}
   .short-tag {{color: {SHORT_RED}; font-weight: 600;}}
+  /* Status strip badges (DASH-03 / SC2 status row) */
+  .status-strip {{
+      display: flex; gap: 12px; flex-wrap: wrap;
+      margin: 16px 0 24px 0;
+      padding: 10px 14px;
+      background: linear-gradient(135deg, {CARD_FROM}, {CARD_TO});
+      border: 1px solid {BORDER};
+      border-radius: 8px;
+      align-items: center;
+  }}
+  .badge {{
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+  }}
+  .badge-label {{
+      color: {TEXT_MUTED}; font-size: 11px; letter-spacing: 0.08em;
+      text-transform: uppercase; margin-right: 6px;
+  }}
+  .badge-long  {{ background: rgba(16,185,129,0.18); color: {LONG_GREEN}; }}
+  .badge-short {{ background: rgba(244,63,94,0.18);  color: {SHORT_RED};  }}
+  .badge-warn  {{ background: rgba(245,158,11,0.18); color: #f59e0b;      }}
+  .badge-muted {{ background: rgba(148,163,184,0.18); color: {TEXT_MUTED}; }}
+  /* Candidate cards (Page II — DASH-04 / SC3) */
+  .cand-card {{
+      background: linear-gradient(135deg, {CARD_FROM}, {CARD_TO});
+      border: 1px solid {BORDER};
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin: 0;
+  }}
+  .cand-card .cand-ticker {{
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: {TEXT_PRIMARY};
+  }}
+  .cand-card .cand-sector {{
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: {TEXT_MUTED};
+      margin-top: 2px;
+  }}
+  .cand-card .cand-row {{
+      display: flex; justify-content: space-between; gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      margin-top: 6px;
+      color: {TEXT_PRIMARY};
+  }}
+  .cand-card .cand-row .lbl {{
+      color: {TEXT_MUTED}; text-transform: uppercase; letter-spacing: 0.06em;
+      font-size: 10px;
+  }}
+  .cand-card.long-side {{ border-left: 3px solid {LONG_GREEN}; }}
+  .cand-card.short-side {{ border-left: 3px solid {SHORT_RED}; }}
+  /* Heatmap cell colorisation (Page II) */
+  .heatmap-table {{ font-family: 'JetBrains Mono', monospace; font-size: 11px; }}
 </style>
 """
 
@@ -164,20 +227,39 @@ def jarvis_header(subtitle: str = "Long / Short Hedge Fund Analyst") -> None:
     )
 
 
+PAGES: tuple[str, ...] = (
+    "I PORTFOLIO",
+    "II RESEARCH",
+    "III RISK",
+    "IV PERFORMANCE",
+    "V EXECUTION",
+    "VI LETTER",
+)
+
+
 def pill_nav(active: str = "I PORTFOLIO") -> None:
-    """DASH-02 Roman-numeral pill nav. v1 ships visual-only (no routing)."""
-    pages = (
-        "I PORTFOLIO",
-        "II RESEARCH",
-        "III RISK",
-        "IV PERFORMANCE",
-        "V EXECUTION",
-        "VI LETTER",
-    )
+    """Render the static styled pill nav. The interactive nav (which routes
+    on click) is built in app.py via st.session_state + Streamlit buttons —
+    this function exists for the rare pages that ship a non-interactive
+    surface (e.g. embedded snapshots)."""
     pills = "".join(
-        f'<span class="pill{" active" if p == active else ""}">{p}</span>' for p in pages
+        f'<span class="pill{" active" if p == active else ""}">{p}</span>' for p in PAGES
     )
     st.markdown(f'<div class="pill-nav">{pills}</div>', unsafe_allow_html=True)
+
+
+def status_strip_html(items: list[tuple[str, str, str]]) -> str:
+    """Build the HTML for a status strip row.
+
+    items = [(label, value, color_token), ...] where color_token maps to one of
+    'long' / 'short' / 'warn' / 'muted'. Used by Page I status row.
+    """
+    parts = ['<div class="status-strip">']
+    for label, value, color in items:
+        cls = f"badge badge-{color}"
+        parts.append(f'<span class="badge-label">{label}</span><span class="{cls}">{value}</span>')
+    parts.append("</div>")
+    return "".join(parts)
 
 
 __all__ = [
@@ -187,10 +269,12 @@ __all__ = [
     "CARD_FROM",
     "CARD_TO",
     "LONG_GREEN",
+    "PAGES",
     "SHORT_RED",
     "TEXT_MUTED",
     "TEXT_PRIMARY",
     "apply_theme",
     "jarvis_header",
     "pill_nav",
+    "status_strip_html",
 ]
