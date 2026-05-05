@@ -90,7 +90,6 @@ def test_crowding_count_three_funds(tmp_path: Path) -> None:
     conn = _migrated_db(tmp_path)
     pe = "2026-03-31"
     fd = "2026-05-15"
-    now = int(time.time())
     with conn:
         # AAPL: 4 funds new — qualifies
         for i, cik in enumerate(("0001", "0002", "0003", "0004")):
