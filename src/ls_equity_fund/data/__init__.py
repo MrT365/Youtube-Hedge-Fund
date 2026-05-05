@@ -28,6 +28,7 @@ from ls_equity_fund.data.institutional import (
     detect_multi_fund_openings,
     refresh_institutional_holdings,
 )
+from ls_equity_fund.data.macro_calendar import refresh_macro_calendar
 from ls_equity_fund.data.prices import refresh_prices
 from ls_equity_fund.data.providers import (
     EstimatesProvider,
@@ -71,5 +72,6 @@ __all__ = [
     "refresh_fundamentals",
     "refresh_institutional_holdings",
     "refresh_prices",
+    "refresh_macro_calendar",
     "refresh_short_interest",
 ]

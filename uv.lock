@@ -699,6 +699,7 @@ source = { editable = "." }
 dependencies = [
     { name = "alembic" },
     { name = "anthropic" },
+    { name = "beautifulsoup4" },
     { name = "curl-cffi" },
     { name = "edgartools" },
     { name = "ib-async" },
@@ -708,6 +709,7 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "python-dotenv" },
     { name = "pyyaml" },
+    { name = "requests" },
     { name = "scipy" },
     { name = "statsmodels" },
     { name = "streamlit" },
@@ -733,6 +735,7 @@ dev = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.13,<2.0" },
     { name = "anthropic", specifier = ">=0.97,<1.0" },
+    { name = "beautifulsoup4", specifier = ">=4.12,<5" },
     { name = "curl-cffi", specifier = ">=0.7" },
     { name = "edgartools", specifier = ">=5.30,<6" },
     { name = "freezegun", marker = "extra == 'dev'", specifier = "==1.5.5" },
@@ -747,6 +750,7 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5,<7" },
     { name = "python-dotenv", specifier = "==1.2.2" },
     { name = "pyyaml", specifier = "==6.0.3" },
+    { name = "requests", specifier = ">=2.32,<3" },
     { name = "responses", marker = "extra == 'dev'", specifier = "==0.26.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.7,<1.0" },
     { name = "scipy", specifier = ">=1.16,<1.18" },
