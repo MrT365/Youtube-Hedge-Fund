@@ -20,6 +20,15 @@ FACTOR_NAMES: tuple[str, ...] = (
     "short_interest",
     "insider",
     "institutional",
+    "combined",
+)
+
+# The composite factor depends on every base factor having scored first; the
+# orchestrator must run the base set, persist, THEN run combined against the
+# persisted parent scores.
+COMPOSITE_FACTORS: frozenset[str] = frozenset({"combined"})
+BASE_FACTORS: tuple[str, ...] = tuple(
+    name for name in FACTOR_NAMES if name not in COMPOSITE_FACTORS
 )
 
 FactorComputeFn = Callable[[sqlite3.Connection, date, list[str] | None], pd.DataFrame]
@@ -36,7 +45,7 @@ FACTOR_REGISTRY: dict[str, FactorComputeFn] = {name: _placeholder(name) for name
 
 
 def register_factor(name: str) -> Callable[[FactorComputeFn], FactorComputeFn]:
-    """Register a factor compute function under one of the eight canonical names."""
+    """Register a factor compute function under one of the canonical factor names."""
     if name not in FACTOR_NAMES:
         raise ValueError(f"unknown factor name {name!r}; expected one of {FACTOR_NAMES}")
 
@@ -65,6 +74,8 @@ def compute_parent_factor_score(subfactors_df: pd.DataFrame) -> pd.DataFrame:
 
 
 __all__ = [
+    "BASE_FACTORS",
+    "COMPOSITE_FACTORS",
     "FACTOR_NAMES",
     "FACTOR_REGISTRY",
     "FactorComputeFn",

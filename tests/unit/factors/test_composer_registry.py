@@ -16,8 +16,10 @@ from ls_equity_fund.factors.composer import (
 )
 
 
-def test_factor_registry_has_8_keys() -> None:
+def test_factor_registry_has_9_keys() -> None:
+    """8 base factors + 'combined' composite (Phase 2 finalization)."""
     assert sorted(FACTOR_REGISTRY.keys()) == [
+        "combined",
         "growth",
         "insider",
         "institutional",
