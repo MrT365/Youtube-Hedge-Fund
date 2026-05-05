@@ -1,6 +1,7 @@
 # Roadmap: Meridian Capital Partners (`MCP` / `ls_equity_fund`)
 
 **Created:** 2026-05-04
+**Last reconciled:** 2026-05-05 (all 11 phases complete — HEAD 317eee3)
 **Granularity:** standard
 **Total v1 phases:** 11 (Phase 0 through Phase 10)
 **Post-v1:** Phase 11 (live-readiness review) — out of v1 scope per PROJECT.md
@@ -15,15 +16,15 @@
 
 - [x] **Phase 0: Foundation** — Repo scaffolding, config schema, SQLite migrations, three seam interfaces, PaperBroker stub, CLI skeleton, structlog audit setup (completed 2026-05-04)
 - [x] **Phase 1: Data Infrastructure (L1)** — Universe (3 modes) + PIT table, benchmarks, daily prices, fundamentals + 24 ratios, EDGAR (10-K/Q/8-K/Form 4 P/S/A/M/F), 13F, short interest, analyst estimates, earnings + FOMC calendars (completed 2026-05-05)
-- [ ] **Phase 2: Scoring Engine (L2)** — 8 factors × 27 sub-factors, GICS sector-percentile rank, P/S-only insider filter, factor_scores persistence
-- [ ] **Phase 3: Reporting + Dashboard Skeleton** — Streamlit at `localhost:8502`, Pages I + II reading L1+L2 only; ranked candidates visible daily before the rest of the stack lands
-- [ ] **Phase 4: Claude AI Analysis (L3)** — Anthropic client + cache_control + cost tracker + analysis cache (ship FIRST), then filing/risk/insider/sector analyzers, combined-score, per-candidate report; earnings analyzer ships as stub
+- [x] **Phase 2: Scoring Engine (L2)** — 8 factors × 27 sub-factors, GICS sector-percentile rank, P/S-only insider filter, factor_scores persistence (completed 2026-05-05)
+- [x] **Phase 3: Reporting + Dashboard Skeleton** — Streamlit at `localhost:8502`, Pages I + II reading L1+L2 only; ranked candidates visible daily before the rest of the stack lands (completed 2026-05-05)
+- [x] **Phase 4: Claude AI Analysis (L3)** — Anthropic client + cache_control + cost tracker + analysis cache (ship FIRST), then filing/risk/insider/sector analyzers, combined-score, per-candidate report; earnings analyzer ships as stub (completed 2026-05-05)
 - [x] **Phase 5: Portfolio Construction — Conviction-tilt only (L4 partial)** — conviction-tilt optimizer, transaction-cost model, rebalance schedule, portfolio state, beta calc, factor exposure, rebalance generator with `--whatif` (completed 2026-05-05)
-- [ ] **Phase 6: Risk Management (L5)** — Barra-style cross-sectional factor risk model with Ledoit-Wolf shrinkage, 8-check pre-trade veto with earnings-blackout for new entries, explicit closing-trade definition, audit log every rejection, circuit breakers
-- [ ] **Phase 7: Portfolio Construction — MVO swap-in (L4 complete)** — MVO optimizer (SLSQP) with full constraint set, conviction-tilt fallback on non-convergence with audit row
-- [ ] **Phase 8: IBKR Execution — Paper (L6)** — ib_async broker, paper-first config, `MERIDIAN_LIVE_OK` gate, order executor with veto + borrow check + ADV chunking + signal-price slippage, IBKR-native short locate, borrow-rate capture, order manager + clean SIGINT, `--dry-run` / `--execute` CLI
-- [ ] **Phase 9: Reporting — Full (L7)** — Daily P&L attribution, position attribution + Spearman, win/loss slicing, sector-relative alpha, turnover analytics, named tear-sheet metric set, Claude weekly commentary, dual-mode daily letter
-- [ ] **Phase 10: Dashboard Polish + JARVIS + launchd + Promotion** — Pages III/IV/V/VI built out, market-hours auto-refresh, JARVIS chat with ~19KB JSON snapshot context, launchd plist with `WakeSystem=true` at 17:15 weekdays, AUDIT-03 paper→live promotion ceremony record
+- [x] **Phase 6: Risk Management (L5)** — Barra-style cross-sectional factor risk model with Ledoit-Wolf shrinkage, 8-check pre-trade veto with earnings-blackout for new entries, explicit closing-trade definition, audit log every rejection, circuit breakers (completed 2026-05-05)
+- [x] **Phase 7: Portfolio Construction — MVO swap-in (L4 complete)** — MVO optimizer (SLSQP) with full constraint set, conviction-tilt fallback on non-convergence with audit row (completed 2026-05-05)
+- [x] **Phase 8: IBKR Execution — Paper (L6)** — ib_async broker, paper-first config, `MERIDIAN_LIVE_OK` gate, order executor with veto + borrow check + ADV chunking + signal-price slippage, IBKR-native short locate, borrow-rate capture, order manager + clean SIGINT, `--dry-run` / `--execute` CLI (completed 2026-05-05)
+- [x] **Phase 9: Reporting — Full (L7)** — Daily P&L attribution, position attribution + Spearman, win/loss slicing, sector-relative alpha, turnover analytics, named tear-sheet metric set, Claude weekly commentary, dual-mode daily letter (completed 2026-05-05)
+- [x] **Phase 10: Dashboard Polish + JARVIS + launchd + Promotion** — Pages III/IV/V/VI built out, market-hours auto-refresh, JARVIS chat with ~19KB JSON snapshot context, launchd plist with `WakeSystem=true` at 17:15 weekdays, AUDIT-03 paper→live promotion ceremony record (completed 2026-05-05)
 
 ## Phase Details
 
@@ -78,7 +79,7 @@
   2. Operator can verify the insider factor counts only Form 4 P-codes and S-codes for net dollar flow; A/M/F/G/D codes contribute zero to the directional signal even though they remain logged for audit, and cluster-buy detection counts distinct insiders with code=P only (binds **CP3 — Form 4 misclassification, factor side**).
   3. Operator can verify side-aware short-interest scoring (longs reward declining SI, shorts reward rising SI) and the estimate-revisions factor returns a degenerate-neutral score until sufficient snapshot history accrues.
   4. Every scoring run persists the scores at-entry to `factor_scores` so a future predictive-power study can replay any historical day's signal exactly as it was generated.
-**Plans**: TBD
+**Plans**: Completed
 **UI hint**: no
 
 ### Phase 3: Reporting + Dashboard Skeleton
@@ -90,7 +91,7 @@
   2. Operator can view Page I (Portfolio cover) with the JARVIS 92px header, the 10 metric cards (Universe / Long Candidates / Short Candidates / Positions / Crowding / Insider Events / CEO Buys / Cluster Buys / VIX / Earnings 7d) reading from L1+L2 SQLite, and the status strip with VIX-regime badge + data-source indicator.
   3. Operator can view Page II (Research) with KPIs, crowding warnings, the factor heatmap (top 30 + bottom 30 × 8 factors), and 10 long + 10 short candidate cards each showing Piotroski / Altman scores — all sourced from `factor_scores` with no Anthropic calls.
   4. The dashboard reads exclusively from SQLite — no factor compute or API call happens on page load — and the 5-minute auto-refresh hook is wired but conditional on market hours so the placeholder pages never trigger Anthropic.
-**Plans**: TBD
+**Plans**: Completed
 **UI hint**: yes
 
 ### Phase 4: Claude AI Analysis (L3)
@@ -103,7 +104,7 @@
   3. Operator can run each of the four analyzers (filing on 8 quarters, risk on 10-K Risk Factors with new-vs-prior diff and boilerplate %, insider on Form 4 last 90d, sector ranking) and get the spec-mandated JSON output shapes, plus the earnings-call analyzer which ships as a stub returning None.
   4. Operator can run combined-score and see 60% quant composite + 40% Claude average across available analyzers with re-rank within sector, falling back to 100% quant with no penalty when Claude data is absent — and per-candidate markdown reports land at `output/reports_{timestamp}/{TICKER}.md`.
   5. Analysis CLI supports `--estimate-cost`, `--ticker`, `--sector`, and full-run modes — the dry-cost estimate runs without calling the API.
-**Plans**: TBD
+**Plans**: Completed
 **UI hint**: no
 
 ### Phase 5: Portfolio Construction — Conviction-tilt only (L4 partial)
@@ -115,7 +116,7 @@
   2. Operator can run the rebalance generator and see the diff vs current positions respecting the 30% turnover budget, prioritized by largest score changes, with per-trade transaction-cost estimates broken into commission + spread + impact bps using a broker-configurable IBKR commission model (not hardcoded $0).
   3. Operator can query `portfolio_positions`, `portfolio_history`, and `position_approvals` and see corporate-action-handled state including `factor_scores_at_entry`, plus rolling 60-day stock beta vs SPY and portfolio long-book / short-book / net beta.
   4. Operator can run the rebalance schedule advisory and see warnings (not blocks) for earnings within 2d, FOMC within 5d (read from L1's live macro feed), and monthly opex within 3d (third Friday).
-**Plans**: TBD
+**Plans**: Completed
 **UI hint**: no
 
 ### Phase 6: Risk Management (L5)
@@ -127,7 +128,7 @@
   2. Operator can submit a candidate trade through the pre-trade veto and see all 8 absolute checks evaluated — (1) halt lock, (2) earnings-blackout for **new entries** (closing trades exempt), (3) liquidity ≤ 5% ADV, (4) position ≤ 5% AUM, (5) sector ≤ 25%, (6) gross/net exposure within bounds, (7) |net beta| ≤ 0.20, (8) pairwise correlation ≤ 0.80 — with any failure rejecting the trade and persisting (timestamp, ticker, reason, trade context) to an immutable audit log.
   3. Operator can verify the closing-trade definition requires *all three* conditions — `abs(new_position) < abs(old_position) AND sign(new_position) == sign(old_position) AND abs(trade_qty) <= abs(old_position)` — and the unit tests cover (a) partial reduce → NOT closing, (b) full close → closing, (c) long→short flip → NOT closing, (d) full close + reverse → NOT closing; `is_closing_trade: bool` is an explicit audit field on every order with the rule that produced it (binds **CP5 — pre-trade veto bypass via closing-trade mislabel**).
   4. Operator can simulate breaching each circuit-breaker threshold and observe the correct action firing automatically — daily loss > 1.5% → SIZE_DOWN 30%; daily loss > 2.5% → CLOSE_ALL_TODAY; weekly loss > 4% → SIZE_DOWN 30%; drawdown > 8% → KILL_SWITCH; single position > 3% NAV → force-close — with each event persisting (timestamp, breaker type, threshold, observed value, portfolio state snapshot).
-**Plans**: TBD
+**Plans**: Completed
 **UI hint**: no
 
 ### Phase 7: Portfolio Construction — MVO swap-in (L4 complete)
@@ -138,7 +139,7 @@
   1. Operator can run `run-portfolio --whatif --optimize-method mvo` and the SLSQP optimizer produces a target book using cost-net expected returns mapped from composite score (100 → +15%/yr, 0 → −15%/yr) with the full constraint set (gross long/short, per-position bounds, beta constraint, sector net, single-side sector) — running against L5's predicted covariance matrix with Ledoit-Wolf shrinkage applied (binds **CP4 — MVO covariance instability without Ledoit-Wolf**).
   2. Operator can intentionally feed an ill-conditioned covariance into MVO and verify the ex-ante volatility sanity check fires (refuse rebalance if model-implied portfolio vol < 5% annualized), the optimizer falls back to conviction-tilt — never silently reuses yesterday's weights — and an audit-log row is written with `(timestamp, reason, fallback used)` so MVO health can be tracked over time.
   3. Operator can flip between `optimize-method conviction` and `optimize-method mvo` via CLI flag or `config.yaml` without code changes, validating the `Optimizer` seam works as a true plug-in.
-**Plans**: TBD
+**Plans**: Completed
 **UI hint**: no
 
 ### Phase 8: IBKR Execution — Paper (L6)
@@ -150,7 +151,7 @@
   2. Operator can attempt to instantiate the broker in live mode without `MERIDIAN_LIVE_OK=1` set and the broker refuses to start; operator confirms the live mode also requires the AUDIT-03 promotion record (defense-in-depth against accidental live trading).
   3. Operator can query the slippage tracker and see side-aware bps slippage = `(fill − signal) / signal × 10000`, plus 30-day rolling avg / median / p95 / total $ cost / worst-5 fills, and verify HTB borrow rate is captured per short and fed into the L4 transaction-cost model (so short-side P&L is no longer silently optimistic).
   4. Operator can issue SIGINT mid-execution and the order manager cancels all pending orders, retains live positions, persists final state cleanly, and every order row contains `(timestamp, ticker, side, shares, limit, fill, slippage_bps, status, broker_order_id)`.
-**Plans**: TBD
+**Plans**: Completed
 **UI hint**: no
 
 ### Phase 9: Reporting — Full (L7)
@@ -162,7 +163,7 @@
   2. Operator can view win/loss analysis sliced by side, holding period (1-5d / 5-20d / 20-60d / 60d+), sector, VIX regime at entry, and factor quintile at entry (with streaks); plus sector-relative alpha per sector over 90d (picks vs sector ETF), total alpha summed across sectors, winner/loser sector counts; plus turnover analytics over 30d / 90d / annualized vs configured budget with a configurable jurisdiction tax model (no US-only hardcoding).
   3. Operator can generate the institutional-format markdown tear sheet exposing the named metric set — Sharpe, Sortino, Calmar, max-DD, hit-rate, profit-factor, skew, kurtosis, tail — alongside metrics-vs-SPY, monthly-returns grid, equity curve, drawdown chart, rolling 12-month Sharpe, factor + sector exposures, and turnover.
   4. Operator can verify the Claude weekly commentary fires on the configurable weekday (default Friday) and the daily letter renders in both `mode: lp` (formal LP letterhead with Delaware domicile, AUM, doc ID `MCP-IM-{YYYY}-{MMDD}`, CONFIDENTIAL stamp, "Dear Limited Partners," JARVIS-voiced 3–4 paragraph body, signature, compliance footer) and `mode: internal` (ops voice), both cached by date with a regenerate action.
-**Plans**: TBD
+**Plans**: Completed
 **UI hint**: no
 
 ### Phase 10: Dashboard Polish + JARVIS + launchd + Promotion
@@ -174,7 +175,7 @@
   2. Operator can ask JARVIS a question via the chat on Page I and the response uses the cached ~19KB JSON snapshot of system state as Anthropic context with prompt caching applied — and 5-minute auto-refresh during market hours (9:30am–4:00pm ET) is idempotent: refresh does not re-trigger Anthropic calls (cache hits used; pre-computed L7 outputs read from SQLite).
   3. Operator can install the macOS launchd plist at `~/Library/LaunchAgents/com.user.hedgefund.daily.plist` with `WakeSystem=true` running `run_scoring.py --no-filings --no-13f` weekdays at 17:15 local — the daily-refresh job records a `runs` row (start_ts, end_ts, status, error) and writes a heartbeat file the dashboard surfaces if the job goes silent — and the run targets ~10 min end-to-end.
   4. Operator can read `PROMOTION.md` documenting paper→live promotion criteria with named numeric thresholds (≥ N weeks paper, max DD < X%, slippage within Y bps of model, factor IC stable, audit log clean), and verify the live mode is gated *both* by the `MERIDIAN_LIVE_OK=1` env-var *and* by an operator-signed checked-criteria record — without both, live mode refuses to instantiate.
-**Plans**: TBD
+**Plans**: Completed
 **UI hint**: yes
 
 ### Phase 11: Live-Readiness Review (POST-V1 — out of v1 scope)
@@ -186,15 +187,15 @@
 |-------|----------------|--------|-----------|
 | 0. Foundation | 7/7 | Complete    | 2026-05-04 |
 | 1. Data Infrastructure (L1) | 10/10 | Complete    | 2026-05-05 |
-| 2. Scoring Engine (L2) | 0/? | Not started | - |
-| 3. Reporting + Dashboard Skeleton | 0/? | Not started | - |
-| 4. Claude AI Analysis (L3) | 0/? | Not started | - |
-| 5. Portfolio Construction — Conviction-tilt (L4 partial) | 0/? | Not started | - |
-| 6. Risk Management (L5) | 0/? | Not started | - |
-| 7. Portfolio Construction — MVO swap-in (L4 complete) | 0/? | Not started | - |
-| 8. IBKR Execution — Paper (L6) | 0/? | Not started | - |
-| 9. Reporting — Full (L7) | 0/? | Not started | - |
-| 10. Dashboard Polish + JARVIS + launchd + Promotion | 0/? | Not started | - |
+| 2. Scoring Engine (L2) | — | ✅ Complete | 2026-05-05 |
+| 3. Reporting + Dashboard Skeleton | — | ✅ Complete | 2026-05-05 |
+| 4. Claude AI Analysis (L3) | — | ✅ Complete | 2026-05-05 |
+| 5. Portfolio Construction — Conviction-tilt (L4 partial) | — | ✅ Complete | 2026-05-05 |
+| 6. Risk Management (L5) | — | ✅ Complete | 2026-05-05 |
+| 7. Portfolio Construction — MVO swap-in (L4 complete) | — | ✅ Complete | 2026-05-05 |
+| 8. IBKR Execution — Paper (L6) | — | ✅ Complete | 2026-05-05 |
+| 9. Reporting — Full (L7) | — | ✅ Complete | 2026-05-05 |
+| 10. Dashboard Polish + JARVIS + launchd + Promotion | — | ✅ Complete | 2026-05-05 |
 
 ## Dependencies Graph
 
@@ -234,4 +235,4 @@ Phase 3 ships value early in parallel with the Phase 4 chain — operator sees d
 - **LIVE-01** (v2): real-capital promotion milestone
 
 ---
-*Roadmap created: 2026-05-04*
+*Roadmap created: 2026-05-04 | Last reconciled: 2026-05-05 (all 11 phases complete — HEAD 317eee3)*
