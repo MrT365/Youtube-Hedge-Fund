@@ -189,6 +189,7 @@ class BrokerConfig(BaseModel):
     live_port: int = Field(default=7496, ge=1, le=65535)
     client_id: int = Field(default=17, ge=0, le=999)
     mode: Literal["paper", "live"] = "paper"
+    audit_promotion_path: str = ".audit/AUDIT-03-live-promotion.json"
 
 
 class BreakersConfig(BaseModel):
@@ -255,6 +256,19 @@ class PortfolioConfig(BaseModel):
     transaction_cost: TransactionCostConfig = Field(default_factory=TransactionCostConfig)
 
 
+class ExecutionConfig(BaseModel):
+    """Paper execution config (ExecutionConfig)."""
+
+    limit_price_policy: Literal["signal", "close", "market_reference"] = "signal"
+    tif: str = "DAY"
+    max_chunks: int = Field(default=5, ge=1, le=5)
+    chunk_skip_adv_pct: float = Field(default=0.01, gt=0, le=1)
+    chunk_defer_adv_pct: float = Field(default=0.05, gt=0, le=1)
+    order_timeout_seconds: int = Field(default=30, ge=1, le=600)
+    borrow_rate_skip_pct: float = Field(default=25.0, ge=0)
+    htb_rate_pct: float = Field(default=10.0, ge=0)
+
+
 class AnthropicConfig(BaseModel):
     """Anthropic Claude analysis config (AnthropicConfig)."""
 
@@ -294,6 +308,7 @@ class Config(BaseSettings):
     broker: BrokerConfig
     risk: RiskConfig
     portfolio: PortfolioConfig
+    execution: ExecutionConfig = Field(default_factory=ExecutionConfig)
     anthropic: AnthropicConfig
     logging: LoggingConfig
 
@@ -429,6 +444,7 @@ __all__ = [
     "BrokerConfig",
     "Config",
     "DataConfig",
+    "ExecutionConfig",
     "LiquidUSConfig",
     "LoggingConfig",
     "PortfolioConfig",

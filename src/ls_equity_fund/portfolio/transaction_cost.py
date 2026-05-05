@@ -31,19 +31,33 @@ class TradeCost:
     spread_usd: float
     impact_usd: float
     sec_fee_usd: float
+    borrow_usd: float
 
     commission_bps: float
     spread_bps: float
     impact_bps: float
     sec_fee_bps: float
+    borrow_bps: float
 
     @property
     def total_usd(self) -> float:
-        return self.commission_usd + self.spread_usd + self.impact_usd + self.sec_fee_usd
+        return (
+            self.commission_usd
+            + self.spread_usd
+            + self.impact_usd
+            + self.sec_fee_usd
+            + self.borrow_usd
+        )
 
     @property
     def total_bps(self) -> float:
-        return self.commission_bps + self.spread_bps + self.impact_bps + self.sec_fee_bps
+        return (
+            self.commission_bps
+            + self.spread_bps
+            + self.impact_bps
+            + self.sec_fee_bps
+            + self.borrow_bps
+        )
 
 
 def _commission_for(cfg: TransactionCostConfig, *, shares: float, trade_value_usd: float) -> float:
@@ -79,6 +93,7 @@ def estimate_trade_cost(
     adv_usd: float,
     cfg: TransactionCostConfig,
     is_sell: bool = False,
+    borrow_rate_pct: float = 0.0,
 ) -> TradeCost:
     """Estimate per-trade cost in USD + bps.
 
@@ -112,16 +127,20 @@ def estimate_trade_cost(
     else:
         impact_bps = 0.0
     impact_usd = trade_value_usd * (impact_bps / 10_000.0)
+    borrow_bps = max(borrow_rate_pct, 0.0) / 100.0 / 365.0 * 10_000.0
+    borrow_usd = trade_value_usd * (borrow_bps / 10_000.0)
 
     return TradeCost(
         commission_usd=commission_usd,
         spread_usd=spread_usd,
         impact_usd=impact_usd,
         sec_fee_usd=sec_fee_usd,
+        borrow_usd=borrow_usd,
         commission_bps=_bps(commission_usd, trade_value_usd),
         spread_bps=cfg.avg_spread_bps if trade_value_usd > 0 else 0.0,
         impact_bps=impact_bps,
         sec_fee_bps=cfg.sec_fee_bps if (is_sell and trade_value_usd > 0) else 0.0,
+        borrow_bps=borrow_bps if trade_value_usd > 0 else 0.0,
     )
 
 

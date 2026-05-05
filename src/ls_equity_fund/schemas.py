@@ -30,8 +30,11 @@ class OrderStatus(StrEnum):
     """Order lifecycle status. Phase 0 minimal set; Phase 8 expands."""
 
     PENDING = "PENDING"
+    SUBMITTED = "SUBMITTED"
+    PARTIAL = "PARTIAL"
     FILLED = "FILLED"
     CANCELLED = "CANCELLED"
+    REJECTED = "REJECTED"
 
 
 class Order(BaseModel):

@@ -89,18 +89,22 @@ def test_run_portfolio_accepts_mvo_flag() -> None:
     assert result.exit_code == 2, f"unexpected exit {result.exit_code}; stderr: {result.stderr}"
 
 
-def test_run_execution_stub_accepts_dry_run() -> None:
-    result = runner.invoke(app, ["run-execution", "--dry-run"])
-    assert result.exit_code == 0, f"stderr: {result.stderr}"
-    assert "not implemented" in result.stdout
+def test_run_execution_accepts_dry_run_flag() -> None:
+    """Phase 8 replaced the stub; with missing config it exits at the config gate."""
+    result = runner.invoke(
+        app,
+        ["run-execution", "--dry-run", "--config", "/tmp/does-not-exist-meridian.yaml"],
+    )
+    assert result.exit_code == 2, f"stderr: {result.stderr}"
 
 
-def test_run_execution_stub_accepts_execute() -> None:
+def test_run_execution_accepts_execute_flag() -> None:
     """``--execute`` is the negative of the ``--dry-run/--execute`` Typer toggle."""
-    result = runner.invoke(app, ["run-execution", "--execute"])
-    assert result.exit_code == 0, f"stderr: {result.stderr}"
-    # When --execute is passed, dry_run should resolve to False.
-    assert "dry_run=False" in result.stdout
+    result = runner.invoke(
+        app,
+        ["run-execution", "--execute", "--config", "/tmp/does-not-exist-meridian.yaml"],
+    )
+    assert result.exit_code == 2, f"stderr: {result.stderr}"
 
 
 def test_run_reporting_stub_accepts_flags() -> None:

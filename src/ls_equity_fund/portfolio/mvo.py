@@ -26,7 +26,6 @@ from ls_equity_fund.portfolio.conviction_tilt import (
     select_candidates,
 )
 from ls_equity_fund.portfolio.transaction_cost import estimate_trade_cost
-from ls_equity_fund.risk.factor_model import FactorRiskResult
 
 EXPECTED_RETURN_MIN = -0.15
 EXPECTED_RETURN_MAX = 0.15
@@ -323,8 +322,9 @@ def _from_conviction_fallback(result: ConvictionTiltResult, *, reason: str) -> M
 
 
 def _coerce_covariance(cov: Any | None) -> pd.DataFrame:
-    if isinstance(cov, FactorRiskResult):
-        return cov.predicted_covariance
+    predicted = getattr(cov, "predicted_covariance", None)
+    if isinstance(predicted, pd.DataFrame):
+        return predicted
     if isinstance(cov, pd.DataFrame):
         return cov
     return pd.DataFrame()

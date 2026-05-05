@@ -106,6 +106,7 @@ broker:
   live_port: 7496           # IBKR live TWS default
   client_id: 17
   mode: paper               # paper | live (live requires MERIDIAN_LIVE_OK=1 + AUDIT-03)
+  audit_promotion_path: .audit/AUDIT-03-live-promotion.json
 
 risk:
   factor_model_window_days: 120
@@ -151,6 +152,16 @@ portfolio:
     sec_fee_bps: 0.27              # 0.0027% on sells/short-covers
     avg_spread_bps: 4.0
     impact_coef_bps: 10.0          # impact = coef * sqrt(trade_value / adv_usd)
+
+execution:
+  limit_price_policy: signal        # signal | close | market_reference
+  tif: DAY
+  max_chunks: 5
+  chunk_skip_adv_pct: 0.01          # <1% ADV: no chunking
+  chunk_defer_adv_pct: 0.05         # >5% ADV: defer to next day
+  order_timeout_seconds: 30
+  borrow_rate_skip_pct: 25.0        # refuse new shorts above 25%/yr borrow
+  htb_rate_pct: 10.0                # hard-to-borrow flag threshold
 
 anthropic:
   model: claude-sonnet-4-5
