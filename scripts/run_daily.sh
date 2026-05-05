@@ -43,6 +43,8 @@ rc=$?
 if [[ "${rc}" == "0" ]]; then meridian run-scoring; rc=$?; fi
 if [[ "${rc}" == "0" ]]; then meridian run-portfolio --whatif --optimize-method conviction; rc=$?; fi
 if [[ "${rc}" == "0" ]]; then meridian run-reporting; rc=$?; fi
+# Add `meridian compute-factor-ic` to the daily chain once ≥20 trading days of price history
+# exist — feeds AUDIT-03 promotion criterion 4 (factor_ic_count_gt_0.03 ≥ 4).
 
 record_end "${rc}"
 exit "${rc}"

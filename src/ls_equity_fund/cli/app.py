@@ -85,4 +85,25 @@ app.command(
 )(run_reporting_cmd)
 
 
+@app.command(
+    "compute-factor-ic",
+    help=(
+        "Compute trailing-window factor IC (Spearman rank correlation of "
+        "parent_score vs forward 20-day return) and persist to "
+        "tear_sheet_metrics. Feeds AUDIT-03 promotion criterion 4."
+    ),
+)
+def compute_factor_ic_cmd() -> None:
+    """Thin Typer wrapper around scripts/compute_factor_ic.py:main()."""
+    import sys
+    from pathlib import Path
+
+    scripts_dir = Path(__file__).resolve().parents[3] / "scripts"
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+    from compute_factor_ic import main as _factor_ic_main
+
+    raise typer.Exit(code=_factor_ic_main())
+
+
 __all__ = ["app"]

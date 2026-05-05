@@ -245,7 +245,7 @@ class PortfolioConfig(BaseModel):
     gross_target: float = Field(default=1.50, gt=0, le=5)
     net_target_low: float = 0.0
     net_target_high: float = 0.10
-    max_beta: float = Field(default=0.15, ge=0, le=5)
+    max_beta: float = Field(default=0.15, ge=0, le=5)  # optimizer target; pre-trade veto hard cap is 0.20 in pre_trade_veto.py and is intentionally not config-driven
     turnover_budget: float = Field(default=0.30, gt=0, le=1)
     mvo_risk_aversion: float = Field(default=1.0, gt=0)
     adv_cap_pct: float = Field(default=0.05, gt=0, le=1)

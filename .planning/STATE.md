@@ -61,7 +61,7 @@ progress:
 
 - Write `[PROMOTION.md](http://PROMOTION.md)` with named numeric promotion criteria (≥ N weeks paper, max DD < X%, slippage within Y bps of model, factor IC stable, audit log clean) before starting the paper-accumulation clock
 - Begin 40-day paper trading accumulation period to satisfy Phase 11 / AUDIT-03 promotion gate
-- Verify Phase 4 Claude analysis implementation location (confirm real analyzer code is present beyond analysis/__init__.py)
+- Verify Claude analyzers run end-to-end with a real Anthropic key — add key to .env and run `meridian run-analysis --estimate-cost` then a live ticker test before paper-trading period ends.
 
 ### Blockers
 
