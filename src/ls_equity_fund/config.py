@@ -45,6 +45,27 @@ class LiquidUSConfig(BaseModel):
     min_market_cap: float = Field(default=500_000_000.0, gt=0)
 
 
+class TrackedFund(BaseModel):
+    """A 13F-tracked fund (DATA-07).
+
+    Per CLAUDE.md anti-recommendation: fund names + CIKs MUST live in config,
+    NOT hardcoded in source. This sub-model is the config-side representation
+    consumed by ``data/institutional.py``.
+    """
+
+    name: str
+    cik: str
+
+    def __init__(self, **data):  # type: ignore[no-untyped-def]
+        # Auto zero-pad CIKs to 10 digits per EDGAR convention.
+        cik = data.get("cik", "")
+        if isinstance(cik, str) and cik.isdigit():
+            data["cik"] = cik.zfill(10)
+        elif isinstance(cik, int):
+            data["cik"] = str(cik).zfill(10)
+        super().__init__(**data)
+
+
 class DataConfig(BaseModel):
     """Market-data layer config (DataConfig)."""
 
@@ -53,6 +74,7 @@ class DataConfig(BaseModel):
     lookback_years: int = Field(default=3, ge=1, le=20)
     benchmark: str = "SPY"
     cache_dir: str = "cache"
+<<<<<<< HEAD
     liquid_us: LiquidUSConfig = Field(default_factory=LiquidUSConfig)
     scanner_seed_tickers: list[str] = Field(
         # 50-ticker seed list = 10 GICS sectors x 5 mega-caps. Plan-prose-math
@@ -100,6 +122,19 @@ class DataConfig(BaseModel):
         default_factory=lambda: ["^VIX", "TLT", "HYG"]
     )
     yfinance_max_workers: int = Field(default=8, ge=1, le=32)
+    tracked_funds: list[TrackedFund] = Field(
+        default_factory=lambda: [
+            TrackedFund(name="Berkshire Hathaway", cik="0001067983"),
+            TrackedFund(name="Citadel Advisors", cik="0001423053"),
+            TrackedFund(name="Point72 Asset Management", cik="0001603466"),
+            TrackedFund(name="Bridgewater Associates", cik="0001350694"),
+            TrackedFund(name="Tiger Global Management", cik="0001167483"),
+            TrackedFund(name="Third Point", cik="0001040273"),
+            TrackedFund(name="Appaloosa Management", cik="0001656456"),
+            TrackedFund(name="Baupost Group", cik="0001061768"),
+            TrackedFund(name="Pershing Square Capital", cik="0001336528"),
+        ]
+    )
 
 
 class BrokerConfig(BaseModel):
@@ -325,5 +360,6 @@ __all__ = [
     "PortfolioConfig",
     "RiskConfig",
     "Secrets",
+    "TrackedFund",
     "load_config",
 ]

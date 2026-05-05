@@ -56,3 +56,6 @@ htmlcov/
 
 # uv
 # (uv.lock IS committed; .venv is not)
+
+# Claude Code agent worktrees (transient — managed by Claude Code's worktree isolation)
+.claude/
