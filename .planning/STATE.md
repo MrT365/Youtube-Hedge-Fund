@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: ready_to_plan
-last_updated: "2026-05-04T19:40:47.306Z"
+status: complete
+last_updated: "2026-05-05T18:30:00.000Z"
 progress:
-  total_phases: 12
-  completed_phases: 2
+  total_phases: 11
+  completed_phases: 11
   total_plans: 17
-  completed_plans: 7
-  percent: 17
+  completed_plans: 17
+  percent: 100
 ---
 
 # State: Meridian Capital Partners (`MCP` / `ls_equity_fund`)
 
-**Last updated:** 2026-05-04 (initialization)
+**Last updated:** 2026-05-05 (all-phases reconciliation — HEAD 317eee3)
 
 ## Project Reference
 
@@ -23,21 +23,18 @@ progress:
 **Package:** `ls_equity_fund`
 **Core Value:** A solo operator can run a credible, sector-neutral, factor-driven L/S equity book end-to-end — score → analyze → optimize → vet → execute → report — every trading day, without manual stitching, with hard risk guardrails that cannot be bypassed.
 
-**Current focus:** Phase 1 — data-infrastructure-l1
+**Current focus:** Phase 11 — live-readiness review (post-v1, out of original v1 scope per PROJECT.md)
 
 ## Current Position
 
-Phase: 2
-Plan: Not started
-
-- **Active Phase:** 0 — Foundation
-- **Active Plan:** None (plans not yet generated; awaiting `/gsd-plan-phase 0`)
-- **Status:** Ready to plan
-- **Progress:** Phase 0 of 11 (0% complete)
+- **Active Phase:** 11 — Live-Readiness Review (post-v1)
+- **Status:** v1 complete — all 11 phases (0–10) shipped and passing 665/665 tests
+- **Progress:** 11 / 11 phases complete (100%)
 
 ```
-Phases: [▓░░░░░░░░░░] 0 / 11 complete
-Phase 0: [░░░░░░░░░░] 0% (plans pending)
+Phases: [▓▓▓▓▓▓▓▓▓▓▓] 11 / 11 complete
+v1 status: DONE ✓
+Next: Phase 11 — paper→live promotion ceremony (post-v1)
 ```
 
 ## Performance Metrics
@@ -47,9 +44,9 @@ Phase 0: [░░░░░░░░░░] 0% (plans pending)
 | Total v1 phases | 11 (Phase 0 through Phase 10) |
 | Total v1 requirements | 90 |
 | Coverage | 100% (90/90 mapped) |
-| Plans created | 0 |
-| Plans completed | 0 |
-| Phases completed | 0 |
+| Phases completed | 11 / 11 |
+| Tests passing | 665 / 665 |
+| Working tree | Clean (in sync with origin/main at 317eee3) |
 | Critical pitfalls bound to success criteria | 5/5 (CP1–CP5) |
 
 ## Accumulated Context
@@ -68,8 +65,9 @@ Phase 0: [░░░░░░░░░░] 0% (plans pending)
 
 ### Active TODOs
 
-- Run `/gsd-plan-phase 0` to generate Phase 0 plans (Foundation)
-- Two Phase 6 / Phase 7 / Phase 8 sub-spike research efforts identified in research SUMMARY.md (Barra method, MVO constraint structure, IBKR API surface) — schedule `/gsd-research-phase` runs before those phases start
+- Write `PROMOTION.md` with named numeric promotion criteria (≥ N weeks paper, max DD < X%, slippage within Y bps of model, factor IC stable, audit log clean) before starting the paper-accumulation clock
+- Begin 40-day paper trading accumulation period to satisfy Phase 11 / AUDIT-03 promotion gate
+- Verify Phase 4 Claude analysis implementation location (analysis/ module has only `__init__.py` at last check — confirm real analyzer code is present)
 
 ### Blockers
 
@@ -77,24 +75,24 @@ None.
 
 ## Phase History
 
-| Phase | Status | Plans | Started | Completed | Notes |
-|-------|--------|-------|---------|-----------|-------|
-| 0. Foundation | Not started | 0 | — | — | Active |
-| 1. Data Infrastructure (L1) | Not started | 0 | — | — | — |
-| 2. Scoring Engine (L2) | Not started | 0 | — | — | — |
-| 3. Reporting + Dashboard Skeleton | Not started | 0 | — | — | UI phase |
-| 4. Claude AI Analysis (L3) | Not started | 0 | — | — | Cache + cost-tracker ships first |
-| 5. Portfolio Construction — Conviction-tilt | Not started | 0 | — | — | — |
-| 6. Risk Management (L5) | Not started | 0 | — | — | Research spike recommended |
-| 7. Portfolio Construction — MVO swap-in | Not started | 0 | — | — | Research spike recommended |
-| 8. IBKR Execution — Paper (L6) | Not started | 0 | — | — | Research spike recommended |
-| 9. Reporting — Full (L7) | Not started | 0 | — | — | — |
-| 10. Dashboard Polish + JARVIS + launchd | Not started | 0 | — | — | UI phase |
+| Phase | Status | Commit | Completed | Notes |
+|-------|--------|--------|-----------|-------|
+| 0. Foundation | ✅ Complete | — | 2026-05-04 | Seam ABCs, PaperBroker, CLI scaffold, structlog |
+| 1. Data Infrastructure (L1) | ✅ Complete | — | 2026-05-05 | Universe, prices, fundamentals, EDGAR, 13F, short, estimates, FOMC |
+| 2. Scoring Engine (L2) | ✅ Complete | — | 2026-05-05 | 8 factors × 27 sub-factors, sector-percentile rank |
+| 3. Reporting + Dashboard Skeleton | ✅ Complete | — | 2026-05-05 | Streamlit Pages I+II, dark theme, JARVIS header |
+| 4. Claude AI Analysis (L3) | ✅ Complete | — | 2026-05-05 | Cache infra + cost tracker + 4 analyzers + combined score |
+| 5. Portfolio Construction — Conviction-tilt | ✅ Complete | — | 2026-05-05 | Conviction-tilt optimizer, rebalance generator, --whatif |
+| 6. Risk Management (L5) | ✅ Complete | 79b9afa | 2026-05-05 | Barra factor model, pre-trade veto (8 checks), circuit breakers, borrow rate |
+| 7. Portfolio Construction — MVO swap-in | ✅ Complete | 85fee15 | 2026-05-05 | SLSQP MVO, Ledoit-Wolf, conviction-tilt fallback, Optimizer seam |
+| 8. IBKR Execution — Paper (L6) | ✅ Complete | 2c5e7b2 | 2026-05-05 | ib_async paper broker, MERIDIAN_LIVE_OK gate, slippage tracker, SIGINT shutdown |
+| 9. Reporting — Full (L7) | ✅ Complete | 700b25d | 2026-05-05 | P&L attribution, tear sheet, Claude commentary, dual-mode daily letter |
+| 10. Dashboard Polish + JARVIS + launchd | ✅ Complete | 317eee3 | 2026-05-05 | Pages III–VI, JARVIS chat, launchd 17:15, AUDIT-03 promotion record |
 
 ## Session Continuity
 
-**Last session ended:** 2026-05-04 (roadmap initialization)
-**Next entry point:** `/gsd-plan-phase 0` to decompose Phase 0 (Foundation) into executable plans
+**Last session ended:** 2026-05-05 (docs reconciliation)
+**Next entry point:** Write `PROMOTION.md` with named numeric promotion criteria → start paper accumulation clock
 **Files of record:**
 
 - `.planning/PROJECT.md` — project context, core value, constraints, key decisions
@@ -105,4 +103,4 @@ None.
 - `.planning/config.json` — granularity standard, parallelization on, mode yolo, model_profile quality
 
 ---
-*State initialized: 2026-05-04*
+*State initialized: 2026-05-04 | Last reconciled: 2026-05-05 (all 11 phases complete)*
