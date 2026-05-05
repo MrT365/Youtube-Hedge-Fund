@@ -9,6 +9,7 @@ downstream layers can import either flavor from ``ls_equity_fund.data``.
 
 from ls_equity_fund.data.base import MarketDataProvider
 from ls_equity_fund.data.benchmarks import refresh_benchmarks
+from ls_equity_fund.data.fundamentals import refresh_fundamentals
 from ls_equity_fund.data.prices import refresh_prices
 from ls_equity_fund.data.providers import (
     EstimatesProvider,
@@ -21,6 +22,7 @@ from ls_equity_fund.data.providers import (
     YFinanceError,
     YFinanceProvider,
 )
+from ls_equity_fund.data.ratios import compute_all_ratios, compute_ratios
 from ls_equity_fund.data.universe import build_universe, merge_universe_pit
 
 __all__ = [
@@ -35,7 +37,10 @@ __all__ = [
     "YFinanceError",
     "YFinanceProvider",
     "build_universe",
+    "compute_all_ratios",
+    "compute_ratios",
     "merge_universe_pit",
     "refresh_benchmarks",
+    "refresh_fundamentals",
     "refresh_prices",
 ]
