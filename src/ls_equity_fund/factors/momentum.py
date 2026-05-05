@@ -74,7 +74,11 @@ def compute_momentum(
 
     rows: list[dict[str, object]] = []
     for ticker in target_tickers:
-        values = _compute_one(series_by_ticker.get(ticker), series_by_ticker.get(ticker_to_etf[ticker]))
+        etf_ticker = ticker_to_etf.get(ticker)
+        values = _compute_one(
+            series_by_ticker.get(ticker),
+            series_by_ticker.get(etf_ticker) if etf_ticker is not None else None,
+        )
         rows.extend(
             {"ticker": ticker, "sub_factor": sub_factor, "raw_value": values[sub_factor]}
             for sub_factor in SUB_FACTORS

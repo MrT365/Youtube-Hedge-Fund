@@ -139,7 +139,7 @@ def _roe_stability(quarterly_rows: list[dict[str, Any]]) -> float:
         if roe is None:
             net_income = _to_float(row.get("net_income"))
             total_equity = _to_float(row.get("total_equity"))
-            if net_income is None or total_equity in (None, 0.0):
+            if net_income is None or total_equity is None or total_equity == 0.0:
                 return float("nan")
             roe = net_income / total_equity
         roes.append(roe)
@@ -161,7 +161,7 @@ def _gross_margin_trend(current: dict[str, Any] | None, prior: dict[str, Any] | 
 def _gross_margin(row: dict[str, Any]) -> float | None:
     gross_profit = _to_float(row.get("gross_profit"))
     revenue = _to_float(row.get("revenue"))
-    if gross_profit is None or revenue in (None, 0.0):
+    if gross_profit is None or revenue is None or revenue == 0.0:
         return None
     return gross_profit / revenue
 

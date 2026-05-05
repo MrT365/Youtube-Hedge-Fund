@@ -20,6 +20,7 @@ from ls_equity_fund.cli.analysis_cmd import run_analysis as run_analysis_cmd
 from ls_equity_fund.cli.data_cmd import run_data as run_data_cmd
 from ls_equity_fund.cli.doctor import doctor as doctor_cmd
 from ls_equity_fund.cli.portfolio_cmd import run_portfolio as run_portfolio_cmd
+from ls_equity_fund.cli.risk_cmd import run_risk as run_risk_cmd
 from ls_equity_fund.cli.scoring_cmd import run_scoring as run_scoring_cmd
 from ls_equity_fund.cli.stubs import daily_refresh as daily_refresh_cmd
 from ls_equity_fund.cli.stubs import (
@@ -74,6 +75,10 @@ app.command(
         "Phase 7 swaps in MVO behind the same Optimizer seam."
     ),
 )(run_portfolio_cmd)
+app.command(
+    "run-risk",
+    help="Run L5 risk model, veto/audit review, and circuit-breaker status.",
+)(run_risk_cmd)
 app.command(
     "run-execution",
     help="(stub) Send orders to broker. Phase 8 fills.",

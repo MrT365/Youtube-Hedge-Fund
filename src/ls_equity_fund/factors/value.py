@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import sqlite3
 from datetime import date
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -188,7 +188,7 @@ def _shareholder_yield(dividend_yield: object, buyback_yield: object) -> float:
 def _float_or_nan(value: object) -> float:
     if value is None or pd.isna(value):
         return float("nan")
-    return float(value)
+    return float(cast("float | int | str", value))
 
 
 def _empty_result() -> pd.DataFrame:

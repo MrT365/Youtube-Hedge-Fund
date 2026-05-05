@@ -7,7 +7,7 @@ caller can preserve audit-visible missingness instead of silently imputing zero.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 PIOTROSKI_CHECKS: tuple[str, ...] = ("F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9")
 _CHECK_DESCRIPTIONS: tuple[str, ...] = (
@@ -63,23 +63,26 @@ def compute_piotroski_f(current: dict[str, Any], prior: dict[str, Any] | None) -
     ):
         return None
 
-    ni_t = current_values["net_income"]
-    ni_p = prior_values["net_income"]
-    cfo_t = current_values["cfo"]
-    ta_t = current_values["total_assets"]
-    ta_p = prior_values["total_assets"]
-    ltd_t = current_values["long_term_debt"]
-    ltd_p = prior_values["long_term_debt"]
-    ca_t = current_values["current_assets"]
-    ca_p = prior_values["current_assets"]
-    cl_t = current_values["current_liabilities"]
-    cl_p = prior_values["current_liabilities"]
-    shares_t = current_values["shares_outstanding"]
-    shares_p = prior_values["shares_outstanding"]
-    gp_t = current_values["gross_profit"]
-    gp_p = prior_values["gross_profit"]
-    rev_t = current_values["revenue"]
-    rev_p = prior_values["revenue"]
+    cur = cast("dict[str, float]", current_values)
+    prv = cast("dict[str, float]", prior_values)
+
+    ni_t = cur["net_income"]
+    ni_p = prv["net_income"]
+    cfo_t = cur["cfo"]
+    ta_t = cur["total_assets"]
+    ta_p = prv["total_assets"]
+    ltd_t = cur["long_term_debt"]
+    ltd_p = prv["long_term_debt"]
+    ca_t = cur["current_assets"]
+    ca_p = prv["current_assets"]
+    cl_t = cur["current_liabilities"]
+    cl_p = prv["current_liabilities"]
+    shares_t = cur["shares_outstanding"]
+    shares_p = prv["shares_outstanding"]
+    gp_t = cur["gross_profit"]
+    gp_p = prv["gross_profit"]
+    rev_t = cur["revenue"]
+    rev_p = prv["revenue"]
 
     roa_t = _safe_div(ni_t, ta_t)
     roa_p = _safe_div(ni_p, ta_p)
