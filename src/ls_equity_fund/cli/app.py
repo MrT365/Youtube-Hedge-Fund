@@ -16,15 +16,13 @@ from __future__ import annotations
 
 import typer
 
+from ls_equity_fund.cli.data_cmd import run_data as run_data_cmd
 from ls_equity_fund.cli.doctor import doctor as doctor_cmd
 from ls_equity_fund.cli.stubs import (
     daily_refresh as daily_refresh_cmd,
 )
 from ls_equity_fund.cli.stubs import (
     run_analysis as run_analysis_cmd,
-)
-from ls_equity_fund.cli.stubs import (
-    run_data as run_data_cmd,
 )
 from ls_equity_fund.cli.stubs import (
     run_execution as run_execution_cmd,
@@ -58,7 +56,10 @@ app.command(
 )(daily_refresh_cmd)
 app.command(
     "run-data",
-    help="(stub) Refresh L1 data. Phase 1 fills.",
+    help=(
+        "Refresh L1 data: universe + benchmarks + prices + fundamentals + "
+        "ratios + filings + 13F + short + estimates + earnings + macro."
+    ),
 )(run_data_cmd)
 app.command(
     "run-scoring",

@@ -40,12 +40,6 @@ def test_daily_refresh_stub_accepts_flags() -> None:
     assert "not implemented" in result.stdout
 
 
-def test_run_data_stub_accepts_flags() -> None:
-    result = runner.invoke(app, ["run-data", "--no-filings", "--no-13f", "--ticker", "AAPL"])
-    assert result.exit_code == 0, f"stderr: {result.stderr}"
-    assert "not implemented" in result.stdout
-
-
 def test_run_scoring_stub_accepts_flags() -> None:
     result = runner.invoke(app, ["run-scoring", "--ticker", "AAPL", "--sector", "Tech"])
     assert result.exit_code == 0, f"stderr: {result.stderr}"
