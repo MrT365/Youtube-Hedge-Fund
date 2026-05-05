@@ -74,7 +74,6 @@ class DataConfig(BaseModel):
     lookback_years: int = Field(default=3, ge=1, le=20)
     benchmark: str = "SPY"
     cache_dir: str = "cache"
-<<<<<<< HEAD
     liquid_us: LiquidUSConfig = Field(default_factory=LiquidUSConfig)
     scanner_seed_tickers: list[str] = Field(
         # 50-ticker seed list = 10 GICS sectors x 5 mega-caps. Plan-prose-math
