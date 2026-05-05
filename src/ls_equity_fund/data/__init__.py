@@ -18,6 +18,7 @@ from ls_equity_fund.data.providers import (
     PolygonProvider,
     ShortInterestProvider,
 )
+from ls_equity_fund.data.universe import build_universe, merge_universe_pit
 
 __all__ = [
     "EstimatesProvider",
@@ -28,5 +29,7 @@ __all__ = [
     "OHLCVProvider",
     "PolygonProvider",
     "ShortInterestProvider",
+    "build_universe",
+    "merge_universe_pit",
     "refresh_benchmarks",
 ]

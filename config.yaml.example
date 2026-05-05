@@ -16,6 +16,76 @@ data:
   sector_etfs: [XLK, XLF, XLV, XLE, XLI, XLC, XLY, XLP, XLB, XLRE, XLU]
   macro_tickers: ["^VIX", TLT, HYG]
 
+  # liquid_us universe-mode thresholds (DATA-01)
+  liquid_us:
+    exchanges: [NYSE, NASDAQ]
+    min_price: 5.0
+    min_avg_dollar_volume_20d: 10000000.0
+    min_market_cap: 500000000.0
+
+  # scanner_seed universe-mode tickers (50 mega-caps, 5 per GICS sector)
+  scanner_seed_tickers:
+    # XLK (Information Technology)
+    - AAPL
+    - MSFT
+    - NVDA
+    - AVGO
+    - ORCL
+    # XLF (Financials)
+    - JPM
+    - BAC
+    - WFC
+    - GS
+    - MS
+    # XLV (Health Care)
+    - UNH
+    - JNJ
+    - LLY
+    - ABBV
+    - PFE
+    # XLE (Energy)
+    - XOM
+    - CVX
+    - COP
+    - EOG
+    - SLB
+    # XLI (Industrials)
+    - GE
+    - HON
+    - CAT
+    - RTX
+    - UPS
+    # XLC (Communication Services)
+    - META
+    - GOOGL
+    - DIS
+    - CMCSA
+    - NFLX
+    # XLY (Consumer Discretionary)
+    - AMZN
+    - TSLA
+    - HD
+    - MCD
+    - NKE
+    # XLP (Consumer Staples)
+    - PG
+    - KO
+    - PEP
+    - COST
+    - WMT
+    # XLB (Materials)
+    - LIN
+    - SHW
+    - APD
+    - ECL
+    - FCX
+    # XLU (Utilities)
+    - NEE
+    - DUK
+    - SO
+    - AEP
+    - D
+
 broker:
   paper_host: 127.0.0.1
   paper_port: 7497          # IBKR paper TWS default
