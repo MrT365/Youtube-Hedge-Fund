@@ -18,6 +18,7 @@ from ls_equity_fund.data.providers import (
     PolygonProvider,
     ShortInterestProvider,
 )
+from ls_equity_fund.data.ratios import compute_all_ratios, compute_ratios
 
 __all__ = [
     "EstimatesProvider",
@@ -28,5 +29,7 @@ __all__ = [
     "OHLCVProvider",
     "PolygonProvider",
     "ShortInterestProvider",
+    "compute_all_ratios",
+    "compute_ratios",
     "refresh_fundamentals",
 ]
