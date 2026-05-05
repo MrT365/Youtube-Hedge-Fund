@@ -8,6 +8,7 @@ downstream layers can import either flavor from ``ls_equity_fund.data``.
 """
 
 from ls_equity_fund.data.base import MarketDataProvider
+from ls_equity_fund.data.macro_calendar import refresh_macro_calendar
 from ls_equity_fund.data.providers import (
     EstimatesProvider,
     FilingsProvider,
@@ -27,4 +28,5 @@ __all__ = [
     "OHLCVProvider",
     "PolygonProvider",
     "ShortInterestProvider",
+    "refresh_macro_calendar",
 ]
