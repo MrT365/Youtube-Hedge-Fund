@@ -85,7 +85,7 @@ def setup(tmp_path: Path):
 
 def test_supported_providers_is_yfinance_only() -> None:
     """v1 ships only yfinance; SUPPORTED_PROVIDERS guards DATA-14."""
-    assert SUPPORTED_PROVIDERS == frozenset({"yfinance"})
+    assert frozenset({"yfinance"}) == SUPPORTED_PROVIDERS
 
 
 def test_default_phase1_forms_matches_filings_default() -> None:
@@ -226,7 +226,7 @@ def test_forms_passed_through_to_filings_step(setup) -> None:
     finally:
         _stop_patches(patches)
 
-    args, kwargs = mocks["refresh_filings"].call_args
+    args, _kwargs = mocks["refresh_filings"].call_args
     # signature: (config, secrets, conn, forms, tickers, today)
     assert ["10-K"] in args, f"forms list not passed to filings step; args={args}"
 

@@ -23,8 +23,9 @@ import sqlite3
 import time
 import traceback
 import uuid
+from collections.abc import Callable
 from datetime import date
-from typing import Any, Callable
+from typing import Any
 
 import structlog
 

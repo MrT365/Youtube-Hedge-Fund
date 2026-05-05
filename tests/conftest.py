@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import shutil
 from pathlib import Path
 
 import pytest
+import structlog
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EXAMPLE_YAML = REPO_ROOT / "config.yaml.example"
@@ -50,3 +52,18 @@ def isolate_env(monkeypatch: pytest.MonkeyPatch) -> None:
     for var in list(os.environ.keys()):
         if var.startswith(leaked_prefixes) or var in leaked_secrets:
             monkeypatch.delenv(var, raising=False)
+
+
+@pytest.fixture(autouse=True)
+def isolate_logging() -> None:
+    """Reset structlog + stdlib logging state between tests.
+
+    `configure_logging()` mutates global structlog config and adds stdlib root
+    handlers. Without reset, tests using `capsys` (e.g. macro_calendar) see
+    stale handler configuration from earlier tests that called configure_logging.
+    """
+    structlog.reset_defaults()
+    root = logging.getLogger()
+    for h in list(root.handlers):
+        root.removeHandler(h)
+    root.setLevel(logging.WARNING)
