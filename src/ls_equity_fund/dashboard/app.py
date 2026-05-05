@@ -30,6 +30,13 @@ import streamlit as st
 
 from ls_equity_fund.config import load_config
 from ls_equity_fund.dashboard import queries
+from ls_equity_fund.dashboard.pages import (
+    page_iii_risk,
+    page_iv_performance,
+    page_v_execution,
+    page_vi_letter,
+)
+from ls_equity_fund.dashboard.pages.page_i_portfolio import render_heartbeat, render_jarvis_chat
 from ls_equity_fund.dashboard.theme import (
     PAGES,
     apply_theme,
@@ -226,6 +233,7 @@ def _render_sidebar(asof: date | None) -> _Filters:
 
 def _render_page_portfolio(conn: sqlite3.Connection, asof: date) -> None:
     jarvis_header()
+    render_heartbeat()
 
     # Status strip (top): VIX regime + data source indicator
     vix = queries.vix_close(conn, asof)
@@ -247,6 +255,7 @@ def _render_page_portfolio(conn: sqlite3.Connection, asof: date) -> None:
     # SQLite with no compute, no API call.
     metrics = _gather_page_i_metrics(conn, asof)
     _render_metric_grid(metrics)
+    render_jarvis_chat()
 
 
 def _gather_page_i_metrics(conn: sqlite3.Connection, asof: date) -> list[tuple[str, str]]:
@@ -470,16 +479,16 @@ def main() -> None:
         _render_page_research(conn, filters["asof"], filters)
     elif page == "III RISK":
         jarvis_header()
-        _render_placeholder("III RISK", "Phase 6 (L5 Risk Management)")
+        page_iii_risk.render(conn)
     elif page == "IV PERFORMANCE":
         jarvis_header()
-        _render_placeholder("IV PERFORMANCE", "Phase 9 (Reporting Full)")
+        page_iv_performance.render(conn)
     elif page == "V EXECUTION":
         jarvis_header()
-        _render_placeholder("V EXECUTION", "Phase 8 (IBKR Paper)")
+        page_v_execution.render(conn, market_open=_is_market_open())
     elif page == "VI LETTER":
         jarvis_header()
-        _render_placeholder("VI LETTER", "Phase 9 / 10 (Daily Letter)")
+        page_vi_letter.render(conn)
     else:  # pragma: no cover — defensive
         st.error(f"Unknown page: {page!r}")
 

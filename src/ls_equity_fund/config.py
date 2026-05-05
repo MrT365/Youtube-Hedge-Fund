@@ -189,7 +189,7 @@ class BrokerConfig(BaseModel):
     live_port: int = Field(default=7496, ge=1, le=65535)
     client_id: int = Field(default=17, ge=0, le=999)
     mode: Literal["paper", "live"] = "paper"
-    audit_promotion_path: str = ".audit/AUDIT-03-live-promotion.json"
+    audit_promotion_path: str = "output/promotion_record.json"
 
 
 class BreakersConfig(BaseModel):

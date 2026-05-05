@@ -106,7 +106,7 @@ broker:
   live_port: 7496           # IBKR live TWS default
   client_id: 17
   mode: paper               # paper | live (live requires MERIDIAN_LIVE_OK=1 + AUDIT-03)
-  audit_promotion_path: .audit/AUDIT-03-live-promotion.json
+  audit_promotion_path: output/promotion_record.json
 
 risk:
   factor_model_window_days: 120

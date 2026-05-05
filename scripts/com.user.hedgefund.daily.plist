@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+Install:
+  mkdir -p ~/Library/Logs/meridian
+  cp scripts/com.user.hedgefund.daily.plist ~/Library/LaunchAgents/
+  launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.user.hedgefund.daily.plist
+  launchctl kickstart -k gui/$(id -u)/com.user.hedgefund.daily
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.user.hedgefund.daily</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/teni/Projects/Youtube Hedge Fund App/scripts/run_daily.sh</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/teni/Projects/Youtube Hedge Fund App</string>
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Weekday</key><integer>1</integer><key>Hour</key><integer>17</integer><key>Minute</key><integer>15</integer></dict>
+    <dict><key>Weekday</key><integer>2</integer><key>Hour</key><integer>17</integer><key>Minute</key><integer>15</integer></dict>
+    <dict><key>Weekday</key><integer>3</integer><key>Hour</key><integer>17</integer><key>Minute</key><integer>15</integer></dict>
+    <dict><key>Weekday</key><integer>4</integer><key>Hour</key><integer>17</integer><key>Minute</key><integer>15</integer></dict>
+    <dict><key>Weekday</key><integer>5</integer><key>Hour</key><integer>17</integer><key>Minute</key><integer>15</integer></dict>
+  </array>
+  <key>WakeSystem</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/Users/teni/Library/Logs/meridian/run.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/teni/Library/Logs/meridian/run_error.log</string>
+</dict>
+</plist>

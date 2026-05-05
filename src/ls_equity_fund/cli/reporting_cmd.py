@@ -10,6 +10,7 @@ import pandas as pd
 import typer
 
 from ls_equity_fund.config import load_config
+from ls_equity_fund.dashboard.jarvis_snapshot import write_snapshot
 from ls_equity_fund.db import get_connection, get_db_path
 from ls_equity_fund.reporting.commentary import (
     generate_weekly_commentary,
@@ -80,6 +81,7 @@ def run_reporting(
             regenerate=regenerate,
         )
         generate_daily_letter(conn, day=day, mode="internal", client=None, regenerate=regenerate)
+        write_snapshot(conn, Path(config.data.cache_dir) / "jarvis_snapshot.json")
         typer.echo(f"run-reporting complete: run_id={run_id} tax_estimate={turnover.tax_estimate:.2f} claude_cost=0.00")
     finally:
         conn.close()
