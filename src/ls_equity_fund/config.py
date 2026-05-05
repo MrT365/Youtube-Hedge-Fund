@@ -37,6 +37,11 @@ class DataConfig(BaseModel):
     lookback_years: int = Field(default=3, ge=1, le=20)
     benchmark: str = "SPY"
     cache_dir: str = "cache"
+    # Per Plan 01-04/01-07 — ThreadPoolExecutor concurrency for yfinance
+    # per-ticker fan-out. yfinance + curl_cffi tolerate ~8 concurrent
+    # requests before Yahoo's bot detection escalates; 4 is a conservative
+    # default that scales linearly with the universe size.
+    yfinance_max_workers: int = Field(default=4, ge=1, le=32)
 
 
 class BrokerConfig(BaseModel):
