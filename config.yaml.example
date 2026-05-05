@@ -163,6 +163,16 @@ execution:
   borrow_rate_skip_pct: 25.0        # refuse new shorts above 25%/yr borrow
   htb_rate_pct: 10.0                # hard-to-borrow flag threshold
 
+reporting:
+  risk_free_rate: 0.0
+  commentary_weekday: 4             # Friday, Python weekday
+  fund_aum_usd: 1000000
+  domicile: Delaware
+  tax:
+    jurisdiction_name: configurable
+    short_term_rate: 0.0
+    long_term_rate: 0.0
+
 anthropic:
   model: claude-sonnet-4-5
   cost_ceiling_usd: 25

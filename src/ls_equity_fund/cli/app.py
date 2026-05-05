@@ -21,12 +21,10 @@ from ls_equity_fund.cli.data_cmd import run_data as run_data_cmd
 from ls_equity_fund.cli.doctor import doctor as doctor_cmd
 from ls_equity_fund.cli.execution_cmd import run_execution as run_execution_cmd
 from ls_equity_fund.cli.portfolio_cmd import run_portfolio as run_portfolio_cmd
+from ls_equity_fund.cli.reporting_cmd import run_reporting as run_reporting_cmd
 from ls_equity_fund.cli.risk_cmd import run_risk as run_risk_cmd
 from ls_equity_fund.cli.scoring_cmd import run_scoring as run_scoring_cmd
 from ls_equity_fund.cli.stubs import daily_refresh as daily_refresh_cmd
-from ls_equity_fund.cli.stubs import (
-    run_reporting as run_reporting_cmd,
-)
 
 app = typer.Typer(
     name="meridian",
@@ -83,7 +81,7 @@ app.command(
 )(run_execution_cmd)
 app.command(
     "run-reporting",
-    help="(stub) Generate L7 reports + letter. Phase 9 fills.",
+    help="Generate L7 attribution, tear sheet, commentary, and daily letter.",
 )(run_reporting_cmd)
 
 

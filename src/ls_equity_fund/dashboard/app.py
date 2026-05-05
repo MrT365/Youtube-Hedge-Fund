@@ -94,17 +94,17 @@ def _connect_fallback() -> sqlite3.Connection:
     return conn
 
 
-@st.cache_data(show_spinner=False, ttl=60)
+@st.cache_data(show_spinner=False, ttl=300)
 def _latest_date_cached(_conn_id: int) -> date | None:
     return queries.latest_score_date(_connect())
 
 
-@st.cache_data(show_spinner=False, ttl=60)
+@st.cache_data(show_spinner=False, ttl=300)
 def _sectors_cached(_conn_id: int, asof_iso: str) -> list[str]:
     return queries.available_sectors(_connect(), date.fromisoformat(asof_iso))
 
 
-@st.cache_data(show_spinner=False, ttl=60)
+@st.cache_data(show_spinner=False, ttl=300)
 def _top_candidates_cached(
     _conn_id: int,
     asof_iso: str,
@@ -122,7 +122,7 @@ def _top_candidates_cached(
     )
 
 
-@st.cache_data(show_spinner=False, ttl=60)
+@st.cache_data(show_spinner=False, ttl=300)
 def _factor_breakdown_cached(
     _conn_id: int, asof_iso: str, tickers_key: tuple[str, ...]
 ) -> pd.DataFrame:

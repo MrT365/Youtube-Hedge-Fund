@@ -108,9 +108,11 @@ def test_run_execution_accepts_execute_flag() -> None:
 
 
 def test_run_reporting_stub_accepts_flags() -> None:
-    result = runner.invoke(app, ["run-reporting", "--ticker", "AAPL"])
-    assert result.exit_code == 0, f"stderr: {result.stderr}"
-    assert "not implemented" in result.stdout
+    result = runner.invoke(
+        app,
+        ["run-reporting", "--config", "/tmp/does-not-exist-meridian.yaml"],
+    )
+    assert result.exit_code == 2, f"stderr: {result.stderr}"
 
 
 def test_unknown_flag_fails() -> None:

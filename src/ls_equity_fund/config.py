@@ -269,6 +269,24 @@ class ExecutionConfig(BaseModel):
     htb_rate_pct: float = Field(default=10.0, ge=0)
 
 
+class TaxConfig(BaseModel):
+    """Configurable tax model for reporting (REPORT-05)."""
+
+    jurisdiction_name: str = "configurable"
+    short_term_rate: float = Field(default=0.0, ge=0, le=1)
+    long_term_rate: float = Field(default=0.0, ge=0, le=1)
+
+
+class ReportingConfig(BaseModel):
+    """Reporting config (ReportingConfig)."""
+
+    risk_free_rate: float = 0.0
+    commentary_weekday: int = Field(default=4, ge=0, le=6)
+    fund_aum_usd: float = Field(default=1_000_000.0, gt=0)
+    domicile: str = "Delaware"
+    tax: TaxConfig = Field(default_factory=TaxConfig)
+
+
 class AnthropicConfig(BaseModel):
     """Anthropic Claude analysis config (AnthropicConfig)."""
 
@@ -309,6 +327,7 @@ class Config(BaseSettings):
     risk: RiskConfig
     portfolio: PortfolioConfig
     execution: ExecutionConfig = Field(default_factory=ExecutionConfig)
+    reporting: ReportingConfig = Field(default_factory=ReportingConfig)
     anthropic: AnthropicConfig
     logging: LoggingConfig
 
@@ -448,8 +467,10 @@ __all__ = [
     "LiquidUSConfig",
     "LoggingConfig",
     "PortfolioConfig",
+    "ReportingConfig",
     "RiskConfig",
     "Secrets",
+    "TaxConfig",
     "TrackedFund",
     "TransactionCostConfig",
     "load_config",
