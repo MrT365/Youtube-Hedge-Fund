@@ -99,6 +99,7 @@ class DataConfig(BaseModel):
     macro_tickers: list[str] = Field(
         default_factory=lambda: ["^VIX", "TLT", "HYG"]
     )
+    yfinance_max_workers: int = Field(default=8, ge=1, le=32)
 
 
 class BrokerConfig(BaseModel):

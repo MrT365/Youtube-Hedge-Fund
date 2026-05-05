@@ -15,6 +15,7 @@ data:
   benchmarks: [SPY, QQQ, IWM, DIA]
   sector_etfs: [XLK, XLF, XLV, XLE, XLI, XLC, XLY, XLP, XLB, XLRE, XLU]
   macro_tickers: ["^VIX", TLT, HYG]
+  yfinance_max_workers: 8        # ThreadPoolExecutor concurrency for yfinance OHLCV fetch
 
   # liquid_us universe-mode thresholds (DATA-01)
   liquid_us:
