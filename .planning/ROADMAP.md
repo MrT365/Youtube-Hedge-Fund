@@ -56,7 +56,7 @@
   3. Operator can query `insider_transactions` and see `transaction_code` as a first-class column distinguishing P / S / A / M / F / G / D — synthetic Form 4 data with all code types parses with the correct codes assigned (binds **CP3 — Form 4 misclassification, ingest side**).
   4. Operator can run the same daily refresh with `--no-filings`, `--no-13f`, and `--forms` selective-pull flags and the run skips those feeds and completes in a fraction of the full-refresh time.
   5. Every concrete data fetch goes through the `MarketDataProvider` interface — a `PolygonProvider` stub class can be instantiated and selected by config without rewriting downstream code (validates the swap-in seam).
-**Plans:** 8/10 plans executed
+**Plans:** 9/10 plans executed
   - [x] 01-01-PLAN.md — Phase 1 schema (13 tables, raw SQL) + 6 sibling provider ABCs + PolygonProvider stub [DATA-13, DATA-14]
   - [x] 01-02-PLAN.md — Universe builder (sp500/liquid_us/scanner_seed) + PIT-aware merge (binds CP1) [DATA-01, DATA-13]
   - [x] 01-03-PLAN.md — Benchmarks + sector ETFs + macro tickers (config-driven) [DATA-02]
@@ -65,7 +65,7 @@
   - [x] 01-06-PLAN.md — EDGAR via edgartools+lxml: 10-K/10-Q/8-K/Form 4 with all 7 codes (binds CP3) + 13F [DATA-05, DATA-06, DATA-07]
   - [x] 01-07-PLAN.md — Short interest + analyst estimates + earnings calendar [DATA-08, DATA-09, DATA-10]
   - [x] 01-08-PLAN.md — Live FOMC calendar (BeautifulSoup4 + fed.gov) + cached fallback [DATA-11]
-  - [ ] 01-09-PLAN.md — Daily-refresh CLI orchestrator + --no-filings/--no-13f/--forms flags + provider guard [DATA-12, DATA-14]
+  - [x] 01-09-PLAN.md — Daily-refresh CLI orchestrator + --no-filings/--no-13f/--forms flags + provider guard [DATA-12, DATA-14]
   - [ ] 01-10-PLAN.md — Phase 1 closure-gate integration test (all 5 ROADMAP SCs as automated tests) [DATA-01..14]
 **UI hint**: no
 
@@ -185,7 +185,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. Foundation | 7/7 | Complete    | 2026-05-04 |
-| 1. Data Infrastructure (L1) | 8/10 | In Progress|  |
+| 1. Data Infrastructure (L1) | 9/10 | In Progress|  |
 | 2. Scoring Engine (L2) | 0/? | Not started | - |
 | 3. Reporting + Dashboard Skeleton | 0/? | Not started | - |
 | 4. Claude AI Analysis (L3) | 0/? | Not started | - |
