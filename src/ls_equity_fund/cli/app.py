@@ -18,9 +18,8 @@ import typer
 
 from ls_equity_fund.cli.data_cmd import run_data as run_data_cmd
 from ls_equity_fund.cli.doctor import doctor as doctor_cmd
-from ls_equity_fund.cli.stubs import (
-    daily_refresh as daily_refresh_cmd,
-)
+from ls_equity_fund.cli.scoring_cmd import run_scoring as run_scoring_cmd
+from ls_equity_fund.cli.stubs import daily_refresh as daily_refresh_cmd
 from ls_equity_fund.cli.stubs import (
     run_analysis as run_analysis_cmd,
 )
@@ -32,9 +31,6 @@ from ls_equity_fund.cli.stubs import (
 )
 from ls_equity_fund.cli.stubs import (
     run_reporting as run_reporting_cmd,
-)
-from ls_equity_fund.cli.stubs import (
-    run_scoring as run_scoring_cmd,
 )
 
 app = typer.Typer(
@@ -63,7 +59,10 @@ app.command(
 )(run_data_cmd)
 app.command(
     "run-scoring",
-    help="(stub) Compute L2 factor scores. Phase 2 fills.",
+    help=(
+        "Compute L2 factor scores: 8 factors x 27 sub-factors, "
+        "sector-percentile rank, persist to factor_scores."
+    ),
 )(run_scoring_cmd)
 app.command(
     "run-analysis",

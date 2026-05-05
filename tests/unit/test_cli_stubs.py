@@ -1,4 +1,4 @@
-"""Tests for the seven stub subcommands (D-23 — flag wiring, behavior is stubbed).
+"""Tests for the remaining stub subcommands (D-23 flag wiring).
 
 Each stub MUST:
   * Accept its locked global-flag set without 'unknown option' errors.
@@ -36,12 +36,6 @@ def test_help_lists_all_eight_commands() -> None:
 
 def test_daily_refresh_stub_accepts_flags() -> None:
     result = runner.invoke(app, ["daily-refresh", "--dry-run", "--no-filings", "--no-13f"])
-    assert result.exit_code == 0, f"stderr: {result.stderr}"
-    assert "not implemented" in result.stdout
-
-
-def test_run_scoring_stub_accepts_flags() -> None:
-    result = runner.invoke(app, ["run-scoring", "--ticker", "AAPL", "--sector", "Tech"])
     assert result.exit_code == 0, f"stderr: {result.stderr}"
     assert "not implemented" in result.stdout
 

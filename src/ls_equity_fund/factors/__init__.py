@@ -1,5 +1,24 @@
-"""L2 - Scoring Engine layer (Phase 2+).
+"""L2 scoring engine public facade."""
 
-Public façade: compute_all(date), get_latest_scores().
-Phase 0 ships only the package marker; concrete factors land in Phase 2.
-"""
+from ls_equity_fund.factors.composer import (
+    FACTOR_NAMES,
+    FACTOR_REGISTRY,
+    compute_parent_factor_score,
+    register_factor,
+)
+from ls_equity_fund.factors.persist import write_factor_scores, write_parent_scores
+from ls_equity_fund.factors.sector_rank import (
+    compute_sector_percentile_rank,
+    percentile_rank_within,
+)
+
+__all__ = [
+    "FACTOR_NAMES",
+    "FACTOR_REGISTRY",
+    "compute_parent_factor_score",
+    "compute_sector_percentile_rank",
+    "percentile_rank_within",
+    "register_factor",
+    "write_factor_scores",
+    "write_parent_scores",
+]

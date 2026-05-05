@@ -13,7 +13,6 @@ their owning phase ships.
 
 Phase mapping:
   - ``daily-refresh``   -> Phase 10 (orchestrator); partial calls land earlier
-  - ``run-scoring``     -> Phase 2
   - ``run-analysis``    -> Phase 4
   - ``run-portfolio``   -> Phase 5 (conviction) / Phase 7 (mvo swap-in)
   - ``run-execution``   -> Phase 8
@@ -39,16 +38,6 @@ def daily_refresh(
 ) -> None:
     """Stub — meta-orchestrator chaining L1->L7. Phase 10 wires fully."""
     typer.echo(f"daily-refresh: {_NOT_YET} (Phase 10 orchestrator)")
-
-
-def run_scoring(
-    ticker: str | None = typer.Option(None, "--ticker", help="(future) restrict to one ticker"),
-    sector: str | None = typer.Option(
-        None, "--sector", help="(future) restrict to one GICS sector"
-    ),
-) -> None:
-    """Stub — L2 factor scoring. Phase 2 fills."""
-    typer.echo(f"run-scoring: {_NOT_YET} (Phase 2)")
 
 
 def run_analysis(
@@ -101,5 +90,4 @@ __all__ = [
     "run_execution",
     "run_portfolio",
     "run_reporting",
-    "run_scoring",
 ]
