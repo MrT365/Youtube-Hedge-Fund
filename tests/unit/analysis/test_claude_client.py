@@ -15,7 +15,6 @@ from ls_equity_fund.analysis.claude_client import (
 )
 from ls_equity_fund.analysis.cost_tracker import CostCeilingExceeded, CostTracker
 
-
 # --- _build_system: the load-bearing CP2 invariant ----------------------------
 
 

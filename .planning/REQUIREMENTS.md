@@ -52,16 +52,16 @@
 
 ### PORT (Layer 4 — Portfolio Construction)
 
-- [ ] **PORT-01**: Conviction-tilt optimizer: equal-weight base within each book; top 5% × 1.5; top 10% × 1.25; ADV cap (no position > 5% of 20-day ADV); halve size if earnings within 5 days; beta-adjust to target; sector-neutral
+- [x] **PORT-01**: Conviction-tilt optimizer: equal-weight base within each book; top 5% × 1.5; top 10% × 1.25; ADV cap (no position > 5% of 20-day ADV); halve size if earnings within 5 days; beta-adjust to target; sector-neutral
 - [ ] **PORT-02**: MVO optimizer (scipy.optimize SLSQP) with cost-net expected returns mapped from composite score (100 → +15%/yr, 0 → −15%/yr), full constraint set (gross long/short, per-position bounds, beta constraint, sector net, single-side sector); falls back to conviction-tilt on non-convergence
 - [ ] **PORT-03**: Optimizer non-convergence writes an audit-log row (timestamp, reason, fallback used) so MVO health can be tracked over time *(gap G7 from research)*
-- [ ] **PORT-04**: Transaction cost model decomposes commission + spread + impact in bps and feeds net-of-cost expected returns into MVO; commission is broker-configurable (IBKR pricing model, not hardcoded $0)
-- [ ] **PORT-05**: Rebalance schedule advisory checks earnings within 2d, FOMC within 5d (from L1 macro feed), monthly opex within 3d (third Friday); returns advisory warnings only, does not block trading
-- [ ] **PORT-06**: Portfolio state persisted in `portfolio_positions`, `portfolio_history`, `position_approvals` with ticker, shares, entry_price, entry_date, current_price, unrealized_pnl, sector, factor_scores_at_entry; corporate actions handled
-- [ ] **PORT-07**: Beta calculator produces rolling 60-day stock beta vs SPY plus portfolio long-book / short-book / net beta
-- [ ] **PORT-08**: Factor-exposure calculator returns weighted average of each factor across long and short books, flags when long-short spread > 1σ from historical
-- [ ] **PORT-09**: Rebalance generator compares current vs target, applies 30% turnover budget, prioritizes largest score changes, estimates per-trade transaction costs, supports `--whatif` mode and `--optimize-method mvo|conviction`
-- [ ] **PORT-10**: Defaults: num_longs=20, num_shorts=20, max_position=5%, max_sector=25%, gross=150%, net=[0%,+10%], max_beta=0.15, turnover_budget=30%, mvo_risk_aversion=1.0 — all in `config.yaml`
+- [x] **PORT-04**: Transaction cost model decomposes commission + spread + impact in bps and feeds net-of-cost expected returns into MVO; commission is broker-configurable (IBKR pricing model, not hardcoded $0)
+- [x] **PORT-05**: Rebalance schedule advisory checks earnings within 2d, FOMC within 5d (from L1 macro feed), monthly opex within 3d (third Friday); returns advisory warnings only, does not block trading
+- [x] **PORT-06**: Portfolio state persisted in `portfolio_positions`, `portfolio_history`, `position_approvals` with ticker, shares, entry_price, entry_date, current_price, unrealized_pnl, sector, factor_scores_at_entry; corporate actions handled
+- [x] **PORT-07**: Beta calculator produces rolling 60-day stock beta vs SPY plus portfolio long-book / short-book / net beta
+- [x] **PORT-08**: Factor-exposure calculator returns weighted average of each factor across long and short books, flags when long-short spread > 1σ from historical *(historical-σ flag deferred to Phase 9; live spread shipped in Phase 5)*
+- [x] **PORT-09**: Rebalance generator compares current vs target, applies 30% turnover budget, prioritizes largest score changes, estimates per-trade transaction costs, supports `--whatif` mode and `--optimize-method mvo|conviction`
+- [x] **PORT-10**: Defaults: num_longs=20, num_shorts=20, max_position=5%, max_sector=25%, gross=150%, net=[0%,+10%], max_beta=0.15, turnover_budget=30%, mvo_risk_aversion=1.0 — all in `config.yaml`
 
 ### RISK (Layer 5 — Risk Management)
 
@@ -201,16 +201,16 @@ Populated by roadmap creation 2026-05-04. Every v1 REQ-ID maps to exactly one ph
 | ANAL-10 | Phase 4 | Pending |
 | ANAL-11 | Phase 4 | Pending |
 | ANAL-12 | Phase 4 | Pending |
-| PORT-01 | Phase 5 | Pending |
+| PORT-01 | Phase 5 | Done |
 | PORT-02 | Phase 7 | Pending |
 | PORT-03 | Phase 7 | Pending |
-| PORT-04 | Phase 5 | Pending |
-| PORT-05 | Phase 5 | Pending |
-| PORT-06 | Phase 5 | Pending |
-| PORT-07 | Phase 5 | Pending |
-| PORT-08 | Phase 5 | Pending |
-| PORT-09 | Phase 5 | Pending |
-| PORT-10 | Phase 5 | Pending |
+| PORT-04 | Phase 5 | Done |
+| PORT-05 | Phase 5 | Done |
+| PORT-06 | Phase 5 | Done |
+| PORT-07 | Phase 5 | Done |
+| PORT-08 | Phase 5 | Done |
+| PORT-09 | Phase 5 | Done |
+| PORT-10 | Phase 5 | Done |
 | RISK-01 | Phase 6 | Pending |
 | RISK-02 | Phase 6 | Pending |
 | RISK-03 | Phase 6 | Pending |

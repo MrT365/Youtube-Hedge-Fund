@@ -22,6 +22,8 @@ from alembic.config import Config as AlembicConfig
 
 from ls_equity_fund.analysis import (
     cache as analysis_cache,
+)
+from ls_equity_fund.analysis import (
     earnings_call_analyzer,
     filing_analyzer,
     insider_analyzer,
@@ -260,7 +262,7 @@ def test_insider_user_message_distinguishes_p_s_from_noise(tmp_path: Path) -> No
         conn=conn, client=client, ticker="AAPL", asof=date(2026, 5, 5)
     )
     # Inspect the user message that was passed to client.call
-    args, kwargs = client.call.call_args
+    _args, kwargs = client.call.call_args
     user_msg = kwargs["user_message"]
     assert "1 transactions" in user_msg  # 1 P
     assert "do NOT factor into directional signal" in user_msg

@@ -137,6 +137,20 @@ portfolio:
   max_beta: 0.15
   turnover_budget: 0.30
   mvo_risk_aversion: 1.0
+  adv_cap_pct: 0.05                # PORT-01: position <= 5% of 20-day ADV
+  adv_lookback_days: 20
+  earnings_halve_window_days: 5    # PORT-01: halve size if earnings within N days
+  beta_lookback_days: 60           # PORT-07: rolling 60-day beta vs SPY
+  target_aum_usd: 1000000          # used by --whatif when no positions exist yet
+  transaction_cost:                # PORT-04: broker-configurable, NOT hardcoded $0
+    commission_model: ibkr_tiered  # ibkr_tiered | ibkr_lite | fixed_per_share | zero
+    cents_per_share: 0.35
+    min_commission_usd: 0.35
+    max_commission_pct_of_trade: 0.01
+    fixed_per_share_cents: 0.5
+    sec_fee_bps: 0.27              # 0.0027% on sells/short-covers
+    avg_spread_bps: 4.0
+    impact_coef_bps: 10.0          # impact = coef * sqrt(trade_value / adv_usd)
 
 anthropic:
   model: claude-sonnet-4-5

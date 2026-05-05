@@ -51,21 +51,42 @@ def test_run_analysis_estimate_cost_mode() -> None:
     assert "TOTAL" in result.stdout
 
 
-def test_run_portfolio_stub_accepts_conviction() -> None:
-    result = runner.invoke(app, ["run-portfolio", "--whatif", "--optimize-method", "conviction"])
-    assert result.exit_code == 0, f"stderr: {result.stderr}"
-    # The stub echoes the optimize_method value back so we can assert flag wiring.
-    assert "conviction" in result.stdout
-
-
-def test_run_portfolio_stub_accepts_mvo() -> None:
-    """Phase 7 MVO swap-in must parse today even though the body is stubbed."""
+def test_run_portfolio_accepts_conviction_flag() -> None:
+    """Phase 5 replaced the stub. Without config.yaml the command should
+    accept the flags without 'unknown option' errors and fail at the missing-
+    config gate (exit 2)."""
     result = runner.invoke(
         app,
-        ["run-portfolio", "--whatif", "--optimize-method", "mvo", "--dry-run"],
+        [
+            "run-portfolio",
+            "--whatif",
+            "--optimize-method",
+            "conviction",
+            "--config",
+            "/tmp/does-not-exist-meridian.yaml",
+        ],
     )
-    assert result.exit_code == 0, f"stderr: {result.stderr}"
-    assert "mvo" in result.stdout
+    # The flags parse; failure mode is the missing-config gate, not a parse error.
+    assert result.exit_code == 2, f"unexpected exit {result.exit_code}; stderr: {result.stderr}"
+
+
+def test_run_portfolio_accepts_mvo_flag() -> None:
+    """Phase 7 MVO swap-in. Phase 5 still needs to parse the flag — once the
+    config gate clears (Phase 7), the body will raise NotImplementedError
+    with exit 8. With a missing-config the command short-circuits at exit 2."""
+    result = runner.invoke(
+        app,
+        [
+            "run-portfolio",
+            "--whatif",
+            "--optimize-method",
+            "mvo",
+            "--dry-run",
+            "--config",
+            "/tmp/does-not-exist-meridian.yaml",
+        ],
+    )
+    assert result.exit_code == 2, f"unexpected exit {result.exit_code}; stderr: {result.stderr}"
 
 
 def test_run_execution_stub_accepts_dry_run() -> None:

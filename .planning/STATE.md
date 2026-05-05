@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
-last_updated: "2026-05-04T19:40:47.306Z"
+last_updated: "2026-05-05T15:00:00.000Z"
 progress:
-  total_phases: 12
-  completed_phases: 2
+  total_phases: 11
+  completed_phases: 6
   total_plans: 17
   completed_plans: 7
-  percent: 17
+  percent: 55
 ---
 
 # State: Meridian Capital Partners (`MCP` / `ls_equity_fund`)
@@ -79,12 +79,12 @@ None.
 
 | Phase | Status | Plans | Started | Completed | Notes |
 |-------|--------|-------|---------|-----------|-------|
-| 0. Foundation | Not started | 0 | — | — | Active |
-| 1. Data Infrastructure (L1) | Not started | 0 | — | — | — |
-| 2. Scoring Engine (L2) | Not started | 0 | — | — | — |
-| 3. Reporting + Dashboard Skeleton | Not started | 0 | — | — | UI phase |
-| 4. Claude AI Analysis (L3) | Not started | 0 | — | — | Cache + cost-tracker ships first |
-| 5. Portfolio Construction — Conviction-tilt | Not started | 0 | — | — | — |
+| 0. Foundation | Done | 7 | 2026-05-04 | 2026-05-04 | 114 tests |
+| 1. Data Infrastructure (L1) | Done | 10 | 2026-05-05 | 2026-05-05 | 278 tests |
+| 2. Scoring Engine (L2) | Done | — | 2026-05-05 | 2026-05-05 | 442 tests |
+| 3. Reporting + Dashboard Skeleton | Done | — | 2026-05-05 | 2026-05-05 | 540 tests; SC2/SC3/SC4 closed |
+| 4. Claude AI Analysis (L3) | Done | — | 2026-05-05 | 2026-05-05 | 519 tests; ANAL-01..12 |
+| 5. Portfolio Construction — Conviction-tilt | Done | — | 2026-05-05 | 2026-05-05 | 601 tests; PORT-01,04..10 |
 | 6. Risk Management (L5) | Not started | 0 | — | — | Research spike recommended |
 | 7. Portfolio Construction — MVO swap-in | Not started | 0 | — | — | Research spike recommended |
 | 8. IBKR Execution — Paper (L6) | Not started | 0 | — | — | Research spike recommended |

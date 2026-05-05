@@ -209,6 +209,30 @@ class RiskConfig(BaseModel):
     breakers: BreakersConfig
 
 
+class TransactionCostConfig(BaseModel):
+    """Transaction-cost model config (PORT-04).
+
+    Commission model is broker-configurable, not hardcoded $0. Defaults track
+    IBKR's "Tiered" pricing for US stocks (≤300k shares/month bracket): 0.35
+    cents/share, $0.35 minimum per order, capped at 1% of trade value, plus
+    a $1 SEC/TAF/FINRA pass-through buffer for short sales (set ``sec_fee_bps``
+    to 0 for IBKR Lite).
+
+    ``avg_spread_bps`` and ``impact_coef_bps`` are config-driven so an operator
+    can recalibrate against their own slippage history (Phase 8 will populate
+    ``slippage`` table; Phase 5 just consumes the constants).
+    """
+
+    commission_model: Literal["ibkr_tiered", "ibkr_lite", "fixed_per_share", "zero"] = "ibkr_tiered"
+    cents_per_share: float = Field(default=0.35, ge=0)
+    min_commission_usd: float = Field(default=0.35, ge=0)
+    max_commission_pct_of_trade: float = Field(default=0.01, ge=0, le=1)
+    fixed_per_share_cents: float = Field(default=0.5, ge=0)
+    sec_fee_bps: float = Field(default=0.27, ge=0)  # 0.0027% — SEC fee on sells/short-covers
+    avg_spread_bps: float = Field(default=4.0, ge=0)
+    impact_coef_bps: float = Field(default=10.0, ge=0)
+
+
 class PortfolioConfig(BaseModel):
     """Portfolio construction config (PortfolioConfig)."""
 
@@ -220,9 +244,15 @@ class PortfolioConfig(BaseModel):
     gross_target: float = Field(default=1.50, gt=0, le=5)
     net_target_low: float = 0.0
     net_target_high: float = 0.10
-    max_beta: float = Field(default=0.15, ge=0, le=2)
+    max_beta: float = Field(default=0.15, ge=0, le=5)
     turnover_budget: float = Field(default=0.30, gt=0, le=1)
     mvo_risk_aversion: float = Field(default=1.0, gt=0)
+    adv_cap_pct: float = Field(default=0.05, gt=0, le=1)
+    adv_lookback_days: int = Field(default=20, ge=5, le=120)
+    earnings_halve_window_days: int = Field(default=5, ge=0, le=30)
+    beta_lookback_days: int = Field(default=60, ge=20, le=252)
+    target_aum_usd: float = Field(default=1_000_000.0, gt=0)
+    transaction_cost: TransactionCostConfig = Field(default_factory=TransactionCostConfig)
 
 
 class AnthropicConfig(BaseModel):
@@ -405,5 +435,6 @@ __all__ = [
     "RiskConfig",
     "Secrets",
     "TrackedFund",
+    "TransactionCostConfig",
     "load_config",
 ]

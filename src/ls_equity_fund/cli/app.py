@@ -19,13 +19,11 @@ import typer
 from ls_equity_fund.cli.analysis_cmd import run_analysis as run_analysis_cmd
 from ls_equity_fund.cli.data_cmd import run_data as run_data_cmd
 from ls_equity_fund.cli.doctor import doctor as doctor_cmd
+from ls_equity_fund.cli.portfolio_cmd import run_portfolio as run_portfolio_cmd
 from ls_equity_fund.cli.scoring_cmd import run_scoring as run_scoring_cmd
 from ls_equity_fund.cli.stubs import daily_refresh as daily_refresh_cmd
 from ls_equity_fund.cli.stubs import (
     run_execution as run_execution_cmd,
-)
-from ls_equity_fund.cli.stubs import (
-    run_portfolio as run_portfolio_cmd,
 )
 from ls_equity_fund.cli.stubs import (
     run_reporting as run_reporting_cmd,
@@ -71,7 +69,10 @@ app.command(
 )(run_analysis_cmd)
 app.command(
     "run-portfolio",
-    help="(stub) Build target book + rebalance. Phase 5/7 fills.",
+    help=(
+        "Build L4 target book + rebalance. Phase 5 ships conviction; "
+        "Phase 7 swaps in MVO behind the same Optimizer seam."
+    ),
 )(run_portfolio_cmd)
 app.command(
     "run-execution",
