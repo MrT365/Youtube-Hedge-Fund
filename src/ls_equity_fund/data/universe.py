@@ -246,7 +246,25 @@ def _build_sp500(*, fixture_html_path: Path | None = None) -> list[dict[str, Any
     if fixture_html_path is not None:
         tables = pd.read_html(str(fixture_html_path))
     else:
-        tables = pd.read_html(WIKIPEDIA_SP500_URL, match="Symbol")
+        # Wikipedia returns HTTP 403 to ``pd.read_html``'s default urllib UA.
+        # Pre-fetch with requests + a real-browser UA, then hand the HTML body
+        # to pd.read_html. Wikipedia's robots.txt permits this when a
+        # descriptive UA + contact info are sent.
+        import io
+        import requests as _requests
+
+        resp = _requests.get(
+            WIKIPEDIA_SP500_URL,
+            headers={
+                "User-Agent": (
+                    "Meridian Capital Partners ls-equity-fund "
+                    "(contact@example.com) universe-builder/1.0"
+                )
+            },
+            timeout=30,
+        )
+        resp.raise_for_status()
+        tables = pd.read_html(io.StringIO(resp.text), match="Symbol")
     df = tables[0]
     out: list[dict[str, Any]] = []
     for _, row in df.iterrows():

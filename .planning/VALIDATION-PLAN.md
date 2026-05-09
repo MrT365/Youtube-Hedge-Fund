@@ -100,6 +100,61 @@ The validation phases below are designed so the **most expensive failure modes g
 
 **Strict gate verdict:** 1 of 8 factors clears 0.03 → ❌ **NO-GO**.
 
+### Phase A v3 (S&P 500 — 503 tickers, broader universe, SimFin PIT fundamentals)
+
+Re-ran Phase A on the broader S&P 500 universe to test the universe-bias hypothesis from v2 (the conjecture that fundamentals factors anti-predict on too-narrow mega-cap universes but should normalise on broad ones).
+
+**Setup:**
+- universe_mode: `sp500` → 503 active tickers (Wikipedia scrape, fixed HTTP 403 with proper User-Agent)
+- 391k daily-price rows backfilled
+- 12,187 SimFin fundamentals rows (8,819 ticker-period cells, 968 distinct PIT publish dates)
+- Form 4 / 13F / short / estimates NOT backfilled at scale (EDGAR parser hang + only-current-snapshot from yfinance)
+- Historical replay: 784 weekdays, 722 ok / 62 failed (early-2023 dates with insufficient lookback)
+
+| Factor | v2 (90) | v3 (500) | What changed |
+|---|---|---|---|
+| `momentum` | +0.0134 | **+0.0290** | **Doubled, right at threshold** — broader universe gives momentum more dispersion to work with. |
+| `value` | −0.0882 | **+0.0060** | Flipped from strongly anti-predictive to ~zero. **Universe-bias hypothesis confirmed for value.** |
+| `quality` | −0.0927 | **−0.0147** | Magnitude collapsed 6×. Still slightly anti, but barely above noise. |
+| `growth` | −0.1280 | **−0.0228** | Magnitude collapsed 5×. Same story as quality. |
+| `revisions` | −0.0105 | −0.0257 | Still untestable (no PIT estimates). |
+| `insider` | +0.0910 | 0.0000 | **Untestable in v3** — Form 4 backfill not run on 503 tickers (parser hangs at scale). v1/v2 result on 90 tickers was the only valid measurement. |
+| `short_interest` | 0.0000 | 0.0000 | Still untestable. |
+| `institutional` | 0.0000 | 0.0000 | Still untestable. |
+
+**Strict gate verdict:** 0 of 8 factors clears 0.03 → ❌ **NO-GO** (worse than v1/v2 on the strict count, but cleaner data).
+
+### What v3 actually told us
+
+The universe-bias hypothesis was **partially** correct:
+
+1. ✅ **Confirmed:** mega-cap universe was distorting fundamentals factor IC. Value/quality/growth all moved from -0.09 to -0.13 (strongly anti) to roughly zero (essentially noise) on the broader universe.
+
+2. ❌ **Disconfirmed:** the broader universe did NOT reveal positive predictive power that was hidden by mega-cap regime. The factors are just noise on S&P 500, not strong-positive.
+
+3. **Momentum** edged up to +0.029 — within striking distance of the 0.03 threshold but not over. With more universe expansion (Russell 1000, Russell 3000) it might cross into PASS territory, but that's speculative.
+
+4. **The insider factor remains the strongest single signal we've found** (IC = +0.091 on 90-ticker), but we can't yet confirm it scales — Form 4 backfill on 503 tickers is blocked by an EDGAR parser bug that hangs after ~30 minutes.
+
+### Honest reading of all three runs
+
+We have run Phase A in three configurations now, with progressively better data:
+
+- **v1 (yfinance only, 90 tickers):** 1/8 PASS (insider). 5 factors structurally untestable.
+- **v2 (yfinance + SimFin PIT, 90 tickers):** 1/8 PASS. Fundamentals factors revealed as strongly anti-predictive on mega-caps.
+- **v3 (yfinance + SimFin PIT, 503 tickers):** 0/8 PASS. Fundamentals factors revert to noise on broad universe; momentum edges close to threshold.
+
+**The strategy as designed does not show predictive power on either universe.** Across 3 years and ~390k price-rows, ~12k fundamentals rows, and 784 replay dates, the only factor with documented edge is `insider` on the 90-ticker universe (IC = +0.091, reproduced across v1 and v2).
+
+The "buy high-score, short low-score" thesis on value/quality/growth doesn't validate. Period.
+
+### Updated paths forward (post v3)
+
+- **Path A — Shelve.** The strict criteria say stop. Three Phase A runs and zero clean factor PASSes (except insider, which is untestable at scale). Defensible kill.
+- **Path C — Pivot to insider-only, with a scale validation step first.** The insider factor showed IC = +0.091 on 90 tickers across two independent runs. Before betting the strategy on it, fix the EDGAR Form 4 parser hang and re-run insider-only IC on S&P 500. If insider survives the universe expansion, that's a real signal worth building a focused strategy around.
+- **Path B' (further expansion)** — try Russell 1000 or 3000. Universe expansion *did* normalise the fundamentals anomaly between v2 and v3, but didn't push them positive. Diminishing returns from going broader. Low priority.
+- **Path D (invert signals)** — still the textbook overfitting trap. Don't.
+
 ### What v2 actually told us (the load-bearing finding)
 
 The SimFin PIT backfill gave us real history for value, quality, and growth. The result is **not** "factors are noise" — it's **stronger than that**: the factors are *anti-predictive* on this universe. Highly-rated value/quality/growth names *underperform* over the next 20 days, with IC magnitudes 3× to 4× the threshold. This is a strong signal in the wrong direction.
@@ -303,8 +358,8 @@ Sign and date this section. It is the most important part of the document.
 
 ## Current position
 
-**Active phase:** Phase A complete — awaiting operator decision on Path A/B/C/D (see Phase A section)
-**Next concrete action:** Operator picks Path A (shelve), B (forward-accumulate), C (paid feed), or D (insider-only pivot)
+**Active phase:** Phase A v3 complete — awaiting operator decision on Path A vs Path C (see Phase A section)
+**Next concrete action:** Operator picks Path A (shelve based on 3 runs of NO-GO) or Path C (fix EDGAR Form 4 parser hang and validate insider-only at S&P 500 scale)
 
 ## Phase log
 
@@ -312,6 +367,7 @@ Sign and date this section. It is the most important part of the document.
 |-------|--------|---------|-----------|--------|-------|
 | A — Pulse check (v1) | ⚠️ Complete (NO-GO strict) | 2026-05-09 | 2026-05-09 | 1/8 PASS; 5/8 untestable (no PIT data) | `insider` IC=+0.091; `momentum` IC=+0.013 |
 | A — Pulse check (v2 with SimFin) | ❌ Complete (NO-GO strict, stronger evidence) | 2026-05-09 | 2026-05-09 | 1/8 PASS; 3/8 strongly ANTI-predictive | `value/quality/growth` ICs −0.09 to −0.13 on mega-cap universe |
+| A — Pulse check (v3 S&P 500 + SimFin) | ❌ Complete (NO-GO strict; universe-bias hypothesis partially confirmed) | 2026-05-09 | 2026-05-09 | 0/8 PASS; momentum +0.029 at threshold | fundamentals factors reverted to ~noise on broader universe; `insider` not measured at scale |
 | B — Full backtest | ⏳ Blocked on Phase A path decision | — | — | — | Cannot run until L1 PIT-history is solved (Path B or C) |
 | C — Paper trading | ⏳ Not started | — | — | — | Path B route uses Phase C as forward-accumulation |
 | D — Initial live | ⏳ Not started | — | — | — | — |
@@ -321,4 +377,4 @@ Update this log as each phase completes. The log becomes the audit trail that pr
 
 ---
 
-*Last updated: 2026-05-09 (v2) — Phase A re-run with SimFin PIT fundamentals; verdict NO-GO strict; value/quality/growth strongly anti-predictive on 90-ticker mega-cap universe*
+*Last updated: 2026-05-09 (v3) — Phase A re-run on S&P 500; verdict NO-GO strict (0/8 PASS, momentum at +0.029 just below threshold); universe-bias hypothesis partially confirmed (fundamentals reverted to noise); only `insider` factor has documented edge but only on 90-ticker universe*
