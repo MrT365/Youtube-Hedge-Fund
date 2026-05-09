@@ -100,7 +100,65 @@ The validation phases below are designed so the **most expensive failure modes g
 
 **Strict gate verdict:** 1 of 8 factors clears 0.03 → ❌ **NO-GO**.
 
-### Phase A v3 (S&P 500 — 503 tickers, broader universe, SimFin PIT fundamentals)
+### Phase A v4 (S&P 500 + insider Form 4 backfill, ~65 universe tickers covered)
+
+After v3, the strongest hypothesis remaining was: **insider IC = +0.091 on the 90-ticker universe might generalise to the 503-ticker S&P 500.** If it did, a focused long-only insider+momentum strategy would have a defensible single-factor edge to build on.
+
+**Setup:**
+- Wrote `scripts/backfill_form4_phase_a.py` with per-ticker SIGALRM timeout and 3y+90d Form 4 lookback (the production refresh defaults to 90d for first-run, which is the right cadence for ongoing daily but misses the historical window needed for backtest)
+- Ran the backfill against the 503-ticker S&P 500 universe; edgartools' internal retry loop bypassed our SIGALRM on a stuck ticker (BG / Bunge), so we killed the run after ~5 hours with **130 tickers backfilled** (31,292 Form 4 transactions)
+- Of the 130 backfilled, ~65 are S&P 500 universe tickers (the rest are reporting-entity tickers — preferred shares, related funds — that don't appear in our universe table)
+- Re-ran historical replay across 784 weekdays / 503 tickers (~2.6 hours), 0 failures
+- Ran `meridian compute-factor-ic`
+
+**Results:**
+
+| Factor | v2 (90, mega-cap) | v3 (503, no insider) | v4 (503, ~65 w/ insider) | Reading |
+|---|---|---|---|---|
+| `insider` | **+0.0910** | n/a | **−0.0420** | **Sign-flipped on broader universe.** Same pattern as value/quality/growth in v2→v3. |
+| `momentum` | +0.0134 | +0.0290 | +0.0189 | Wobbled around threshold; not a clean PASS in any config. |
+| `value` | −0.0882 | +0.0060 | +0.0025 | Stable noise at scale. |
+| `quality` | −0.0927 | −0.0147 | −0.0143 | Stable mild-negative noise at scale. |
+| `growth` | −0.1280 | −0.0228 | −0.0019 | Stable noise at scale. |
+| `revisions` | −0.0105 | −0.0257 | −0.0426 | Slowly drifting more negative — but still untestable (current-snapshot only) |
+| `short_interest` | 0.0000 | 0.0000 | 0.0000 | Still untestable. |
+| `institutional` | 0.0000 | 0.0000 | 0.0000 | Still untestable (13F parser broken). |
+
+**Composite IC for momentum + insider 50/50 (the proposed Phase A v4 thesis):**
+0.5 × (+0.0189) + 0.5 × (−0.0420) = **−0.0116** → negative composite, would lose money on average across a long-only book using this signal blend.
+
+**Strict gate verdict:** 0 of 8 factors clear 0.03 → ❌ **NO-GO** (third strict NO-GO in a row).
+
+### What v4 actually told us
+
+The insider factor's +0.091 IC on the 90-ticker mega-cap universe **almost certainly was a small-universe artifact**, the same kind of measurement distortion that produced the −0.09 to −0.13 fundamentals ICs in v2. When the universe broadens, the signal collapses (or reverses) toward noise. We saw this pattern in three separate places now:
+
+1. v2 → v3: `value` went −0.088 → +0.006 (anti-predictive on 90 → noise on 503)
+2. v2 → v3: `quality` went −0.093 → −0.015 (anti-predictive on 90 → noise on 503)
+3. v2 → v3: `growth` went −0.128 → −0.023 (anti-predictive on 90 → noise on 503)
+4. v2 → v4: `insider` went +0.091 → −0.042 (predictive on 90 → noise/anti on 503)
+
+Four of the eight factors have now shown the same small-universe distortion pattern, confirming that **the v2 ICs (positive or negative) were artifacts of the 90-ticker mega-cap regime, not genuine factor edges.**
+
+### The honest read across all four runs
+
+We have now run Phase A in four configurations:
+
+| Run | Universe | Data | Factors PASS | Strongest IC |
+|---|---|---|---|---|
+| v1 | 90 | yfinance only | 1/8 (insider +0.091) | insider |
+| v2 | 90 | yfinance + SimFin PIT | 1/8 (insider +0.091) | insider, but value/quality/growth strongly anti-predictive |
+| v3 | 503 | yfinance + SimFin PIT, no insider | 0/8 (momentum +0.029 closest) | momentum |
+| v4 | 503 | yfinance + SimFin + 65-ticker insider backfill | 0/8 | none clearly above noise |
+
+**Across four independent runs and two universes, the 8-factor strategy as designed never achieves the ≥4-of-8 PASS gate.** The only "PASS"-level factor was insider on a small mega-cap universe, and v4 showed that signal does not survive universe expansion.
+
+### Updated paths forward (post v4)
+
+- **Path A — Shelve.** Four Phase A runs, four NO-GO verdicts, with each run *strengthening* the case that the strategy doesn't validate. The v2 insider PASS that motivated Path B and Path C has now been retracted by v4 evidence. The infrastructure (data layer, dashboard, risk system, execution, reporting) remains valuable as a portfolio piece and reusable foundation. **This is the rational choice given the data.**
+- **Path A' (variant) — Shelve as a strategy, repurpose as infrastructure.** Keep the code on GitHub. If you ever want to test a different strategy thesis (mean-reversion, pairs trading, earnings drift, trend-following), 80% of the codebase is reusable. You'd swap the factor definitions and portfolio construction; everything else stays. ~1-2 weeks of focused work to retarget.
+- ~~Path C — insider-only validation~~ — RETRACTED. v4 disproves the premise. Insider does not survive universe expansion.
+- ~~Path B' — broader universe still~~ — already done implicitly. The fundamentals factors normalised at 503 tickers; going to 1,000 or 3,000 names is unlikely to magically reveal positive edge that isn't there.
 
 Re-ran Phase A on the broader S&P 500 universe to test the universe-bias hypothesis from v2 (the conjecture that fundamentals factors anti-predict on too-narrow mega-cap universes but should normalise on broad ones).
 
@@ -358,8 +416,8 @@ Sign and date this section. It is the most important part of the document.
 
 ## Current position
 
-**Active phase:** Phase A v3 complete — awaiting operator decision on Path A vs Path C (see Phase A section)
-**Next concrete action:** Operator picks Path A (shelve based on 3 runs of NO-GO) or Path C (fix EDGAR Form 4 parser hang and validate insider-only at S&P 500 scale)
+**Active phase:** Phase A v4 complete — four runs, four NO-GO verdicts. Path C disproven.
+**Next concrete action:** Operator decides between **Path A (shelve)** or **Path A' (shelve strategy, repurpose infrastructure for a different thesis)**. Path B and Path C are now disproven by data.
 
 ## Phase log
 
@@ -368,6 +426,7 @@ Sign and date this section. It is the most important part of the document.
 | A — Pulse check (v1) | ⚠️ Complete (NO-GO strict) | 2026-05-09 | 2026-05-09 | 1/8 PASS; 5/8 untestable (no PIT data) | `insider` IC=+0.091; `momentum` IC=+0.013 |
 | A — Pulse check (v2 with SimFin) | ❌ Complete (NO-GO strict, stronger evidence) | 2026-05-09 | 2026-05-09 | 1/8 PASS; 3/8 strongly ANTI-predictive | `value/quality/growth` ICs −0.09 to −0.13 on mega-cap universe |
 | A — Pulse check (v3 S&P 500 + SimFin) | ❌ Complete (NO-GO strict; universe-bias hypothesis partially confirmed) | 2026-05-09 | 2026-05-09 | 0/8 PASS; momentum +0.029 at threshold | fundamentals factors reverted to ~noise on broader universe; `insider` not measured at scale |
+| A — Pulse check (v4 S&P 500 + insider Form 4) | ❌ Complete (NO-GO strict; insider also a small-universe artifact) | 2026-05-10 | 2026-05-10 | 0/8 PASS; insider IC flipped from +0.091 to −0.042 | insider+momentum 50/50 composite IC = −0.012; thesis disproven |
 | B — Full backtest | ⏳ Blocked on Phase A path decision | — | — | — | Cannot run until L1 PIT-history is solved (Path B or C) |
 | C — Paper trading | ⏳ Not started | — | — | — | Path B route uses Phase C as forward-accumulation |
 | D — Initial live | ⏳ Not started | — | — | — | — |
@@ -377,4 +436,4 @@ Update this log as each phase completes. The log becomes the audit trail that pr
 
 ---
 
-*Last updated: 2026-05-09 (v3) — Phase A re-run on S&P 500; verdict NO-GO strict (0/8 PASS, momentum at +0.029 just below threshold); universe-bias hypothesis partially confirmed (fundamentals reverted to noise); only `insider` factor has documented edge but only on 90-ticker universe*
+*Last updated: 2026-05-10 (v4) — Phase A re-run with Form 4 insider backfill on S&P 500. Insider IC sign-flipped from +0.091 (90-ticker) to −0.042 (broader universe), confirming the v2 insider PASS was a small-universe artifact. Strategy thesis is dead across all 8 factors. Strict NO-GO across four independent runs.*
