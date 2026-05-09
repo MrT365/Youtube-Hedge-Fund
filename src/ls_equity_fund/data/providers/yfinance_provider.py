@@ -201,20 +201,46 @@ class YFinanceProvider(
 
     # ---------- FundamentalsProvider (filled by Plan 01-05) ----------
     def get_fundamentals(self, ticker: str) -> pd.DataFrame:
-        raise NotImplementedError("Filled by Plan 01-05 (fundamentals + ratios)")
+        """Delegate to the per-statement implementation in
+        ``yfinance_provider_fundamentals``. Imports lazily so unit tests that
+        stub out the impl module don't pay the import cost on class load.
+        """
+        from ls_equity_fund.data.providers.yfinance_provider_fundamentals import (
+            get_fundamentals_impl,
+        )
+
+        return get_fundamentals_impl(self.session, ticker)
 
     # ---------- ShortInterestProvider (filled by Plan 01-07) ----------
     def get_short_interest(self, ticker: str, asof: date) -> dict[str, Any] | None:
-        raise NotImplementedError("Filled by Plan 01-07 (short interest)")
+        """Delegate to the snapshot implementation in
+        ``yfinance_provider_secondary``."""
+        from ls_equity_fund.data.providers.yfinance_provider_secondary import (
+            get_short_interest_impl,
+        )
+
+        return get_short_interest_impl(self.session, ticker, asof)
 
     # ---------- EstimatesProvider (filled by Plan 01-07) ----------
     def get_estimates(self, ticker: str, asof: date) -> dict[str, Any] | None:
-        raise NotImplementedError("Filled by Plan 01-07 (analyst estimates)")
+        """Delegate to the analyst-estimates implementation in
+        ``yfinance_provider_secondary``."""
+        from ls_equity_fund.data.providers.yfinance_provider_secondary import (
+            get_estimates_impl,
+        )
+
+        return get_estimates_impl(self.session, ticker, asof)
 
     def get_next_earnings_dates(
         self, ticker: str, lookahead_days: int = 30
     ) -> list[dict[str, Any]]:
-        raise NotImplementedError("Filled by Plan 01-07 (earnings calendar)")
+        """Delegate to the earnings-calendar implementation in
+        ``yfinance_provider_secondary``."""
+        from ls_equity_fund.data.providers.yfinance_provider_secondary import (
+            get_next_earnings_dates_impl,
+        )
+
+        return get_next_earnings_dates_impl(self.session, ticker, lookahead_days)
 
 
 __all__ = ["YFinanceError", "YFinanceProvider"]

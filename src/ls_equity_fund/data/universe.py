@@ -107,6 +107,26 @@ def merge_universe_pit(
         for row in conn.execute("SELECT ticker, first_seen_date, delisted_date FROM universe")
     }
 
+    # CP1 safety check: refuse to delist >50% of an established universe in one
+    # run. A wholesale wipeout almost always means the upstream universe-mode
+    # query failed (yfinance rate-limit, network blip, empty filter result), not
+    # a legitimate mass-delisting event. Without this guard a transient upstream
+    # failure poisons the entire pipeline (every downstream step then reads
+    # ``WHERE delisted_date IS NULL`` and finds zero active tickers).
+    #
+    # The check only fires once the universe is "established" (>= 20 active
+    # tickers) — otherwise tiny test/dev universes can't legitimately churn.
+    n_existing_active = sum(1 for v in existing.values() if v["delisted_date"] is None)
+    n_incoming = len(incoming_tickers)
+    if n_existing_active >= 20 and n_incoming * 2 < n_existing_active:
+        raise ValueError(
+            f"universe-build aborted: incoming list has {n_incoming} tickers but "
+            f"existing active universe has {n_existing_active} (would delist >50% "
+            f"in one run). This usually means the upstream universe-mode query "
+            f"failed. Inspect data.universe_mode + provider connectivity, then "
+            f"re-run."
+        )
+
     conn.execute("BEGIN")
     try:
         for r in rows:

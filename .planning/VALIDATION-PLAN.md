@@ -74,7 +74,56 @@ The validation phases below are designed so the **most expensive failure modes g
 
 **Time:** ~1 week elapsed (mostly compute time)
 **Money at risk:** $0
-**Status:** ⏳ NOT STARTED
+**Status:** ⚠️ **COMPLETE — STRICT NO-GO with critical structural finding (2026-05-09)**
+
+**Result summary:**
+
+| Factor | IC (3y) | Verdict | Notes |
+|---|---|---|---|
+| `insider` | **+0.0910** | ✅ **PASS** | Real edge — Form 4 P/S codes with CEO/CFO 3× weighting + cluster-buy bonus genuinely predicts 20-day forward returns. Above the 0.03 threshold by 3×. |
+| `momentum` | +0.0134 | ⚠️ FAIL | Positive but below threshold. Below academic literature for momentum on US large caps (typical 0.03–0.06). May reflect 50-ticker mega-cap universe (less momentum dispersion than broad market). |
+| `revisions` | -0.0105 | ❌ FAIL | Slightly negative — but only 4 distinct scores across 785 dates → factor was *unmeasurable* (see structural finding). |
+| `value` / `quality` / `growth` / `short_interest` / `institutional` | +0.0000 | ❌ UNTESTABLE | **Zero distinct scores across 785 historical dates** — see structural finding below. |
+
+**Strict gate verdict (per original kill criteria):** 1 of 8 factors clears 0.03 → **NO-GO**.
+
+**The structural finding (load-bearing for v2 planning):**
+
+The L1 data layer ingests today's snapshot only for fundamentals, short interest, analyst estimates, and institutional holdings. Historical PIT replay against those tables produces identical scores across every replay date → zero rank-correlation variance → IC ≈ 0. **Five of the eight factors are not just "failing" — they are structurally untestable** with the current data architecture.
+
+This is a real-world consequence of the previous AI feedback's warning: "yfinance fundamentals — restated numbers silently replacing historical values; D2 mitigation helps but doesn't fully solve this." Phase A discovered exactly that limitation. The `as_of_ingest_date` append-only design works going *forward* (each day's snapshot is preserved), but historical backfill of past quarter snapshots is not possible from yfinance.
+
+**What this means for the project:**
+
+The strategy as designed cannot be validated end-to-end on 3 years of history without one of:
+
+1. **Paid PIT-historical fundamentals feed** (Polygon, Tiingo, or IEX with 3-5y historical PIT data — typically ~$50–500/month). The `MarketDataProvider` seam already exists; swap-in is a config flip + provider class.
+2. **Forward-accumulated snapshots** — paper-trade for 60–90 days while ingesting daily snapshots; the system *naturally* builds the PIT history forward over time. Slow but free.
+3. **Pivot to insider-only strategy** — only one factor demonstrably has edge on this data; rebuild a focused strategy around the `insider` factor's signal.
+
+**Steps actually run:**
+1. ✅ Smoke-tested daily pipeline (doctor + run-data + run-scoring + run-portfolio --whatif)
+2. ✅ Found and fixed two L1 layer bugs:
+   - **Bug 1:** `YFinanceProvider` had stub methods raising `NotImplementedError` for fundamentals/short/estimates/earnings — wired them to delegate to existing `_impl` modules. (commit pending)
+   - **Bug 2:** Universe builder mass-delisted all 90 tickers when upstream `liquid_us` lookup failed; added safety check that aborts when incoming list would delist >50% of established universe. (commit pending)
+3. ✅ Re-ran full data refresh: prices (39k rows), fundamentals (849), ratios (90), filings (2,255 metadata + 1,273 insider transactions). The filings step hung after ~30 min on EDGAR rate-limit retries; killed, recovered short_interest + estimates via direct refresh calls.
+4. ✅ Wrote `scripts/historical_replay.sh`, ran across 784 weekdays (2023-05-09 → 2026-05-09), 0 failures, 36 minutes.
+5. ✅ Ran `meridian compute-factor-ic` against the populated `factor_scores_parent` table.
+6. ⚠️ Discovered 5 of 8 factors are structurally untestable due to current-snapshot-only L1 data.
+
+**Go/No-Go gate (strict, original):**
+- ❌ **NO-GO** — 1 of 8 factors clears 0.03; gate required ≥ 4.
+
+**Go/No-Go gate (nuanced reading):**
+- ⚠️ **PARTIAL** — 1 of 2 *testable* factors passes strongly (`insider`); the other 6 need data infrastructure work to be validated.
+
+**Recommended next decision (for operator):**
+
+Pick ONE of:
+- **Path A — Accept NO-GO and shelve / pivot.** The strict criteria say stop. The insider factor alone is too thin a strategy.
+- **Path B — Switch to forward-accumulation Phase C.** Skip Phase B, run paper-trading for 60–90 days, naturally build PIT history forward, then re-run Phase A with that data. Total elapsed: 3 months before re-validation.
+- **Path C — Pay for a PIT historical data feed.** Subscribe to Polygon/Tiingo PIT fundamentals (~$50–500/month), backfill 3y of historical fundamentals/short/estimates/13F, re-run Phase A in ~1 day. Most expensive but fastest path to a real Phase A verdict.
+- **Path D — Pivot to insider-only strategy.** The one factor that works has IC = 0.0910 — that's actually high. Rebuild a focused single-factor strategy around it; this would be a different project.
 
 **Steps:**
 1. Add Anthropic API key to `.env` (or skip Claude for Phase A — see note)
@@ -218,16 +267,16 @@ Sign and date this section. It is the most important part of the document.
 
 ## Current position
 
-**Active phase:** Pre-Phase-A (operational setup)
-**Next concrete action:** Smoke-test the daily pipeline end-to-end (see Phase A, step 2)
+**Active phase:** Phase A complete — awaiting operator decision on Path A/B/C/D (see Phase A section)
+**Next concrete action:** Operator picks Path A (shelve), B (forward-accumulate), C (paid feed), or D (insider-only pivot)
 
 ## Phase log
 
 | Phase | Status | Started | Completed | Result | Notes |
 |-------|--------|---------|-----------|--------|-------|
-| A — Pulse check | ⏳ Not started | — | — | — | — |
-| B — Full backtest | ⏳ Not started | — | — | — | — |
-| C — Paper trading | ⏳ Not started | — | — | — | — |
+| A — Pulse check | ⚠️ Complete (NO-GO strict / PARTIAL nuanced) | 2026-05-09 | 2026-05-09 | 1/8 factors PASS; 5/8 untestable | `insider` IC=+0.091; `momentum` IC=+0.013; 5 factors blocked by L1 PIT gap |
+| B — Full backtest | ⏳ Blocked on Phase A path decision | — | — | — | Cannot run until L1 PIT-history is solved (Path B or C) |
+| C — Paper trading | ⏳ Not started | — | — | — | Path B route uses Phase C as forward-accumulation |
 | D — Initial live | ⏳ Not started | — | — | — | — |
 | E — Scale up | ⏳ Not started | — | — | — | — |
 
@@ -235,4 +284,4 @@ Update this log as each phase completes. The log becomes the audit trail that pr
 
 ---
 
-*Last updated: 2026-05-06*
+*Last updated: 2026-05-09 — Phase A complete (NO-GO strict/PARTIAL nuanced; structural finding documented)*

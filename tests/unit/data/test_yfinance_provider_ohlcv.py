@@ -11,6 +11,7 @@ from __future__ import annotations
 import sqlite3
 from datetime import date
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import pandas as pd
@@ -98,14 +99,62 @@ def test_get_last_stored_date_reads_max(tmp_path: Path) -> None:
     assert provider.get_last_stored_date("MSFT") is None  # absent
 
 
-def test_unfilled_methods_raise_with_plan_reference() -> None:
-    """Fundamentals/short/estimates filled by later plans — clear messaging."""
-    provider = YFinanceProvider(session=object())
-    with pytest.raises(NotImplementedError, match="01-05"):
-        provider.get_fundamentals("AAPL")
-    with pytest.raises(NotImplementedError, match="01-07"):
-        provider.get_short_interest("AAPL", date(2026, 1, 1))
-    with pytest.raises(NotImplementedError, match="01-07"):
-        provider.get_estimates("AAPL", date(2026, 1, 1))
-    with pytest.raises(NotImplementedError, match="01-07"):
-        provider.get_next_earnings_dates("AAPL")
+def test_provider_delegates_to_impl_modules(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fundamentals/short/estimates/earnings methods must delegate to the
+    ``yfinance_provider_fundamentals`` and ``yfinance_provider_secondary``
+    modules — they used to be NotImplementedError stubs and were never wired,
+    silently producing zero rows in production. Pin the wiring with mocks.
+    """
+    import pandas as pd
+
+    fund_calls: list[tuple[Any, str]] = []
+    short_calls: list[tuple[Any, str, date]] = []
+    est_calls: list[tuple[Any, str, date]] = []
+    earn_calls: list[tuple[Any, str, int]] = []
+
+    def fake_fund(session: Any, ticker: str) -> pd.DataFrame:
+        fund_calls.append((session, ticker))
+        return pd.DataFrame()
+
+    def fake_short(session: Any, ticker: str, asof: date) -> dict[str, Any] | None:
+        short_calls.append((session, ticker, asof))
+        return {"shares_short": 1}
+
+    def fake_est(session: Any, ticker: str, asof: date) -> dict[str, Any] | None:
+        est_calls.append((session, ticker, asof))
+        return None
+
+    def fake_earn(session: Any, ticker: str, lookahead: int) -> list[dict[str, Any]]:
+        earn_calls.append((session, ticker, lookahead))
+        return []
+
+    monkeypatch.setattr(
+        "ls_equity_fund.data.providers.yfinance_provider_fundamentals.get_fundamentals_impl",
+        fake_fund,
+    )
+    monkeypatch.setattr(
+        "ls_equity_fund.data.providers.yfinance_provider_secondary.get_short_interest_impl",
+        fake_short,
+    )
+    monkeypatch.setattr(
+        "ls_equity_fund.data.providers.yfinance_provider_secondary.get_estimates_impl",
+        fake_est,
+    )
+    monkeypatch.setattr(
+        "ls_equity_fund.data.providers.yfinance_provider_secondary.get_next_earnings_dates_impl",
+        fake_earn,
+    )
+
+    sentinel_session = object()
+    provider = YFinanceProvider(session=sentinel_session)
+    asof = date(2026, 1, 1)
+
+    provider.get_fundamentals("AAPL")
+    provider.get_short_interest("AAPL", asof)
+    provider.get_estimates("AAPL", asof)
+    provider.get_next_earnings_dates("AAPL", lookahead_days=14)
+
+    assert fund_calls == [(sentinel_session, "AAPL")]
+    assert short_calls == [(sentinel_session, "AAPL", asof)]
+    assert est_calls == [(sentinel_session, "AAPL", asof)]
+    assert earn_calls == [(sentinel_session, "AAPL", 14)]
