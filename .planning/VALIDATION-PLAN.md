@@ -74,18 +74,54 @@ The validation phases below are designed so the **most expensive failure modes g
 
 **Time:** ~1 week elapsed (mostly compute time)
 **Money at risk:** $0
-**Status:** ⚠️ **COMPLETE — STRICT NO-GO with critical structural finding (2026-05-09)**
+**Status:** ❌ **COMPLETE — STRICT NO-GO with stronger evidence after SimFin PIT data added (2026-05-09 v2)**
 
-**Result summary:**
+### Phase A v1 (yfinance only — current snapshot fundamentals):
 
 | Factor | IC (3y) | Verdict | Notes |
 |---|---|---|---|
-| `insider` | **+0.0910** | ✅ **PASS** | Real edge — Form 4 P/S codes with CEO/CFO 3× weighting + cluster-buy bonus genuinely predicts 20-day forward returns. Above the 0.03 threshold by 3×. |
-| `momentum` | +0.0134 | ⚠️ FAIL | Positive but below threshold. Below academic literature for momentum on US large caps (typical 0.03–0.06). May reflect 50-ticker mega-cap universe (less momentum dispersion than broad market). |
-| `revisions` | -0.0105 | ❌ FAIL | Slightly negative — but only 4 distinct scores across 785 dates → factor was *unmeasurable* (see structural finding). |
-| `value` / `quality` / `growth` / `short_interest` / `institutional` | +0.0000 | ❌ UNTESTABLE | **Zero distinct scores across 785 historical dates** — see structural finding below. |
+| `insider` | **+0.0910** | ✅ PASS | Real edge — Form 4 P/S codes work. |
+| `momentum` | +0.0134 | ⚠️ FAIL | Positive but weak. |
+| `revisions` | -0.0105 | ❌ FAIL | Only 4 distinct scores → unmeasurable. |
+| `value/quality/growth/short_interest/institutional` | 0.0000 | ❌ UNTESTABLE | Zero distinct scores → no PIT history. |
 
-**Strict gate verdict (per original kill criteria):** 1 of 8 factors clears 0.03 → **NO-GO**.
+### Phase A v2 (SimFin PIT fundamentals added — 1,766 cells across 563 publish dates):
+
+| Factor | IC (3y) | Verdict | Notes |
+|---|---|---|---|
+| `insider` | **+0.0910** | ✅ **PASS** | Same as v1 — real, persistent edge. |
+| `momentum` | +0.0134 | ⚠️ FAIL | Same as v1. |
+| `value` | **−0.0882** | ❌ **STRONGLY ANTI-PREDICTIVE** | NEW data; high-value scores predict *lower* forward returns. |
+| `quality` | **−0.0927** | ❌ **STRONGLY ANTI-PREDICTIVE** | NEW data; high Piotroski/Altman scores predict *lower* returns. |
+| `growth` | **−0.1280** | ❌ **STRONGLY ANTI-PREDICTIVE** | NEW data; the strongest anti-signal of all 8. |
+| `revisions` | -0.0105 | ❌ FAIL | Still untestable (yfinance estimates only today's snapshot). |
+| `short_interest` | 0.0000 | ❌ UNTESTABLE | Still no PIT history. |
+| `institutional` | 0.0000 | ❌ UNTESTABLE | EDGAR 13F parser broken on pre-2010 filings. |
+
+**Strict gate verdict:** 1 of 8 factors clears 0.03 → ❌ **NO-GO**.
+
+### What v2 actually told us (the load-bearing finding)
+
+The SimFin PIT backfill gave us real history for value, quality, and growth. The result is **not** "factors are noise" — it's **stronger than that**: the factors are *anti-predictive* on this universe. Highly-rated value/quality/growth names *underperform* over the next 20 days, with IC magnitudes 3× to 4× the threshold. This is a strong signal in the wrong direction.
+
+Three plausible explanations:
+
+1. **Universe bias.** The 50–90 mega-cap US universe (mostly tech-heavy S&P 100 names) is a regime where the "cheap" / "high-quality" / "high-growth" names within each GICS sector tend to be the laggards. Within only 5–9 names per sector, ranking by traditional value/quality/growth metrics often surfaces value traps and saturated growth stories rather than true outperformers. **Broad-universe factor research (academic IC ~0.03–0.06) typically uses 500–3,000 names, not 50–90 mega-caps.**
+
+2. **Regime effect.** 2023-2026 was dominated by AI/mega-cap-growth rallies. The cheapest-by-P/E mega-cap during that window was often the *least* exciting (META vs NVDA, etc.). High Piotroski-quality often meant defensive/mature sectors (utilities, staples) that lagged the rally.
+
+3. **Sign convention.** Possible but unlikely — three independent factors all flipped the same direction with consistent magnitudes argues for genuine regime/universe effect, not a code bug.
+
+### Honest reading of the verdict
+
+**The strategy as designed does not validate on this universe.** That's the data, not an excuse. Three of the eight factors aren't just noise — they're anti-predictive (negative IC magnitudes 0.09–0.13). Following the existing rules (long high-score, short low-score) over the last 3 years would have systematically lost money on those three factors. Only `insider` clearly works.
+
+### Paths forward (re-evaluated after v2)
+
+- **Path A — Shelve.** The strict criteria say stop. v2 gave us *stronger* NO-GO signal than v1. Walk away.
+- **Path B (revised) — Re-run on broader universe.** Switch from 90-ticker scanner-seed to S&P 500 (`universe_mode: sp500`). The factor IC literature says factors work on broad universes; with 500 names ranked within each sector you get 50+ per sector instead of 5–9, which gives the percentile rank room to discriminate. This is a single config change + re-run of all the L1 backfill steps. Cost: ~1 day of focused work + maybe a Polygon/Tiingo/SimFin paid tier for the larger universe.
+- **Path C — Pivot to insider-only.** The one factor that works has IC = +0.091 — that's actually exceptional for a single factor. A focused single-factor strategy around insider buys (CEO/CFO weighted) could be a real edge. This would be a different project but starts from real evidence.
+- **Path D — Invert the fundamentals signals.** The data says high-value/quality/growth scores anti-predict. A contrarian strategy (long the LOW scores, short the HIGH scores) would have the opposite IC sign. This is risky — overfitting to in-sample data — but matches what the data actually shows. Treat with extreme suspicion until validated on a different time window.
 
 **The structural finding (load-bearing for v2 planning):**
 
@@ -274,7 +310,8 @@ Sign and date this section. It is the most important part of the document.
 
 | Phase | Status | Started | Completed | Result | Notes |
 |-------|--------|---------|-----------|--------|-------|
-| A — Pulse check | ⚠️ Complete (NO-GO strict / PARTIAL nuanced) | 2026-05-09 | 2026-05-09 | 1/8 factors PASS; 5/8 untestable | `insider` IC=+0.091; `momentum` IC=+0.013; 5 factors blocked by L1 PIT gap |
+| A — Pulse check (v1) | ⚠️ Complete (NO-GO strict) | 2026-05-09 | 2026-05-09 | 1/8 PASS; 5/8 untestable (no PIT data) | `insider` IC=+0.091; `momentum` IC=+0.013 |
+| A — Pulse check (v2 with SimFin) | ❌ Complete (NO-GO strict, stronger evidence) | 2026-05-09 | 2026-05-09 | 1/8 PASS; 3/8 strongly ANTI-predictive | `value/quality/growth` ICs −0.09 to −0.13 on mega-cap universe |
 | B — Full backtest | ⏳ Blocked on Phase A path decision | — | — | — | Cannot run until L1 PIT-history is solved (Path B or C) |
 | C — Paper trading | ⏳ Not started | — | — | — | Path B route uses Phase C as forward-accumulation |
 | D — Initial live | ⏳ Not started | — | — | — | — |
@@ -284,4 +321,4 @@ Update this log as each phase completes. The log becomes the audit trail that pr
 
 ---
 
-*Last updated: 2026-05-09 — Phase A complete (NO-GO strict/PARTIAL nuanced; structural finding documented)*
+*Last updated: 2026-05-09 (v2) — Phase A re-run with SimFin PIT fundamentals; verdict NO-GO strict; value/quality/growth strongly anti-predictive on 90-ticker mega-cap universe*

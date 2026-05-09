@@ -374,6 +374,7 @@ class Secrets(BaseSettings):
     ibkr_username: str = ""  # may be empty for paper-only operators
     ibkr_password: str = ""
     sec_user_agent: str
+    simfin_api_key: str = ""  # optional — only needed for PIT historical fundamentals backfill
 
     model_config = SettingsConfigDict(
         env_file=".env",
